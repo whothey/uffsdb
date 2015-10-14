@@ -26,6 +26,31 @@ column *insereValor(table  *tab, column *c, char *nomeCampo, char *valorCampo) {
         if (tipo == 'S') {
             nTam = tam;
         }
+        
+		if (tipo == 'I') {
+		
+			
+			if (nTam > 10) {
+				
+				printf("WARNING: field exceeded the integer size limit and was not inserted.\n");
+				
+				return ERRO_INSERIR_VALOR;
+				
+			}
+			
+			if (nTam == 10) {
+				
+				if (valorCampo[0] > '1') { 			// VALOR MAXIMO DA VAR INT 2147483647 (nessa solução serão desperdiçados 147483647 valores), caso esse valor seja ultrapassado 
+													// vai dar erro ou valor indeterminado
+			
+					printf("WARNING: field exceeded the integer size limit and was not inserted.\n");
+					
+					return ERRO_INSERIR_VALOR;
+							
+				}
+				
+			}		
+		}
 
         e->valorCampo = (char *)malloc(sizeof(char) * (nTam+1));
 
@@ -82,6 +107,35 @@ column *insereValor(table  *tab, column *c, char *nomeCampo, char *valorCampo) {
                 if (tipo == 'S') {
                     nTam = tam;
                 }
+                
+				if (tipo == 'I') {
+				
+					
+					if (nTam > 10) {
+						
+						printf("WARNING: field exceeded the integer size limit and was not inserted.\n");
+						
+						return ERRO_INSERIR_VALOR;		
+						
+					}
+					
+					if (nTam == 10) {
+						
+								
+						
+						if (valorCampo[0] > '1') { 			// VALOR MAXIMO DA VAR INT 2147483647 (nessa solução serão desperdiçados 147483647 valores), caso esse valor seja ultrapassado 
+															// vai dar erro ou valor indeterminado
+					
+							printf("WARNING: field exceeded the integer size limit and was not inserted.\n");
+							
+							return ERRO_INSERIR_VALOR;
+							
+							
+						
+						}
+						
+					}		
+				}
 
                 e->valorCampo = (char *) malloc (sizeof(char) * (nTam+1));
 
