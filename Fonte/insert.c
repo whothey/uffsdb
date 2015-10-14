@@ -37,7 +37,8 @@ void insert(rc_insert *s_insert) {
 				if(typesCompatible(esquema->tipo,getInsertedType(s_insert, esquema->nome, tabela))) {
 					colunas = insereValor(tabela, colunas, esquema->nome, getInsertedValue(s_insert, esquema->nome, tabela));
 				} else {
-					printf("ERROR: data type invalid to column '%s' of relation '%s' (expected: %c, received: %c).\n", esquema->nome, tabela->nome, esquema->tipo, getInsertedType(s_insert, esquema->nome, tabela));
+					printf("ERROR: data type invalid to column '%s' of relation '%s' (expected: %c, received: %c).\n", esquema->nome, 
+							tabela->nome, esquema->tipo, getInsertedType(s_insert, esquema->nome, tabela));
 					flag=1;
 				}
 			}
@@ -58,11 +59,17 @@ void insert(rc_insert *s_insert) {
 					s_insert->type[i] = 'D';
 				}
 
-				if(s_insert->type[i] == tabela->esquema[i].tipo)
-					colunas = insereValor(tabela, colunas, tabela->esquema[i].nome, s_insert->values[i]);
-				else {
-					printf("ERROR: data type invalid to column '%s' of relation '%s' (expected: %c, received: %c).\n", tabela->esquema[i].nome, tabela->nome, tabela->esquema[i].tipo, s_insert->type[i]);
-					flag=1;
+				if(s_insert->type[i] == tabela->esquema[i].tipo){
+					colunas = insereValor(tabela, colunas, tabela->esquema[i].nome, s_insert->values[i]); 
+					if(colunas == NULL){
+						flag = 1;
+						printf("ERROR: Oversized of column '%s' of relation '%s'\n", tabela->esquema[i].nome, tabela->nome);
+						return;	
+					}
+				}else {
+					printf("ERROR: data type invalid to column '%s' of relation '%s' (expected: %c, received: %c).\n", 
+						tabela->esquema[i].nome, tabela->nome, tabela->esquema[i].tipo, s_insert->type[i]);
+					flag = 1;
 				}
 			}
 		} else {

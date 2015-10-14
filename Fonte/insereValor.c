@@ -41,17 +41,18 @@ column *insereValor(table  *tab, column *c, char *nomeCampo, char *valorCampo) {
          */
         if (n > TAMANHO_NOME_CAMPO) {
            n = TAMANHO_NOME_CAMPO;
-           printf("WARNING: field name exceeded the size limit and was truncated.\n");
+           //printf("WARNING: field name exceeded the size limit and was truncated.\n");
+	   
         }
-
-
-        strncpylower(e->nomeCampo, nomeCampo, n-1);
+	
+	strncpylower(e->nomeCampo, nomeCampo, n-1);
+	
 
         n = strlen(valorCampo);
 
         if (n > tam && tipo == 'S') {
             n = tam;
-            printf("WARNING: value of column \"%s\" exceeded the size limit and was truncated.\n", nomeCampo);
+            //printf("WARNING: value of column \"%s\" exceeded the size limit and was truncated.\n", nomeCampo);
         }
 
         for(i=0; i < n; i++) e->valorCampo[i] = valorCampo[i];
@@ -99,10 +100,12 @@ column *insereValor(table  *tab, column *c, char *nomeCampo, char *valorCampo) {
                  */
                 if (n > TAMANHO_NOME_CAMPO) {
                    n = TAMANHO_NOME_CAMPO;
-                   printf("WARNING: field name exceeded the size limit and was truncated.\n");
+                  // printf("WARNING: field name exceeded the size limit and was truncated.\n");
+		  return NULL;
                 }
-
-                strncpylower(e->nomeCampo, nomeCampo, n-1);
+		strncpylower(e->nomeCampo, nomeCampo, n-1);
+		
+                
 
                 //strncpy(e->nomeCampo, nomeCampo,n);
 
@@ -110,7 +113,8 @@ column *insereValor(table  *tab, column *c, char *nomeCampo, char *valorCampo) {
 
                 if (n > tam && tipo == 'S') {
                     n = tam;
-                    printf("WARNING: value of column \"%s\"exceeded the size limit and was truncated.\n", nomeCampo);
+		    return NULL;
+		//    printf("WARNING: value of column \"%s\"exceeded the size limit and was truncated.\n", nomeCampo);
                 }
 
                 for(i=0; i < n; i++) e->valorCampo[i] = valorCampo[i];
