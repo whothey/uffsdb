@@ -5,6 +5,12 @@
 column *insereValor(table  *tab, column *c, char *nomeCampo, char *valorCampo) {
     int i;
 
+	char arrayBigInt[10]; 
+	
+	memset(arrayBigInt, 0, 10);
+	
+	strcpy(arrayBigInt, "2147483647"); // Valor maximo do signed int
+
     column *aux;
     column *e = NULL;
 
@@ -38,18 +44,16 @@ column *insereValor(table  *tab, column *c, char *nomeCampo, char *valorCampo) {
 				
 			}
 			
-			if (nTam == 10) {
-				
-				if (valorCampo[0] > '1') { 			// VALOR MAXIMO DA VAR INT 2147483647 (nessa solução serão desperdiçados 147483647 valores), caso esse valor seja ultrapassado 
-													// vai dar erro ou valor indeterminado
-			
+			if (nTam == 10) {		
+						
+				if (strcmp(valorCampo, arrayBigInt) > 0)	{ // CASO o valor do campo seja maior que o valor MAX do int saira um valor > 0
+													
 					printf("WARNING: field exceeded the integer size limit and was not inserted.\n");
-					
-					return ERRO_INSERIR_VALOR;
-							
-				}
 				
-			}		
+					return ERRO_INSERIR_VALOR;
+					
+				}					
+			}			
 		}
 
         e->valorCampo = (char *)malloc(sizeof(char) * (nTam+1));
@@ -119,21 +123,15 @@ column *insereValor(table  *tab, column *c, char *nomeCampo, char *valorCampo) {
 						
 					}
 					
-					if (nTam == 10) {
-						
+					if (nTam == 10) {		
 								
-						
-						if (valorCampo[0] > '1') { 			// VALOR MAXIMO DA VAR INT 2147483647 (nessa solução serão desperdiçados 147483647 valores), caso esse valor seja ultrapassado 
-															// vai dar erro ou valor indeterminado
-					
+						if (strcmp(valorCampo, arrayBigInt) > 0)	{	// CASO o valor do campo seja maior que o valor MAX do int saira um valor > 0			
+															
 							printf("WARNING: field exceeded the integer size limit and was not inserted.\n");
-							
+						
 							return ERRO_INSERIR_VALOR;
 							
-							
-						
-						}
-						
+						}					
 					}		
 				}
 
