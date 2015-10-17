@@ -76,7 +76,6 @@ void  setValueInsert(char *nome, char type) {
 				nome =nome-1;
 				char numeros[] = "!@#$%&*+=~^:/?{]}[";
 				char *pos_atual = strpbrk(nome, numeros);
-				printf("NOMEE: %s", nome);
 				if(pos_atual != NULL){
 					return;
 		 
