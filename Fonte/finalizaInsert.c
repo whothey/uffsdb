@@ -133,8 +133,10 @@ int finalizaInsert(char *nome, column *c){
 
         } else if (auxT[t].tipo == 'I'){ // Grava um dado do tipo inteiro.
             i = 0;
+                
             while (i < strlen(auxC->valorCampo)){
                 if (auxC->valorCampo[i] < 48 || auxC->valorCampo[i] > 57){
+				
                     printf("ERROR: column \"%s\" expectet integer.\n", auxC->nomeCampo);
 					free(tab); // Libera a memoria da estrutura.
 					free(tab2); // Libera a memoria da estrutura.

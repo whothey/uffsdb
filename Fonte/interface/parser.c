@@ -2,6 +2,8 @@
 #include <pthread.h>
 #include "../buffend.h"
 #include "parser.h"
+#include <string.h>
+
 
 /* Estrutura global que guarda as informações obtidas pelo yacc
  * na identificação dos tokens
@@ -56,17 +58,34 @@ void setColumnInsert(char **nome) {
     GLOBAL_PARSER.col_count++;
 }
 
-void setValueInsert(char *nome, char type) {
+void  setValueInsert(char *nome, char type) {
     int i;
     GLOBAL_DATA.values  = realloc(GLOBAL_DATA.values, (GLOBAL_PARSER.val_count+1)*sizeof(char *));
     GLOBAL_DATA.type    = realloc(GLOBAL_DATA.type, (GLOBAL_PARSER.val_count+1)*sizeof(char));
 
     // Adiciona o valor no vetor de strings
     GLOBAL_DATA.values[GLOBAL_PARSER.val_count] = malloc(sizeof(char)*(strlen(nome)+1));
-    if (type == 'I' || type == 'D') {
-        strcpy(GLOBAL_DATA.values[GLOBAL_PARSER.val_count], nome);
-        GLOBAL_DATA.values[GLOBAL_PARSER.val_count][strlen(nome)] = '\0';
-    } else if (type == 'S') {
+			
+    
+			if (type == 'I' || type == 'D') {
+		
+				strcpy(GLOBAL_DATA.values[GLOBAL_PARSER.val_count], nome);
+				GLOBAL_DATA.values[GLOBAL_PARSER.val_count][strlen(nome)] = '\0';
+				
+				nome -= sizeof(char);
+				nome =nome-1;
+				char numeros[] = "!@#$%&*+=~^:/?{]}[";
+				char *pos_atual = strpbrk(nome, numeros);
+				printf("NOMEE: %s", nome);
+				if(pos_atual != NULL){
+					return;
+		 
+				}
+			}
+				
+				
+	
+        if (type == 'S') {
         for (i = 1; i < strlen(nome)-1; i++) {
             GLOBAL_DATA.values[GLOBAL_PARSER.val_count][i-1] = nome[i];
         }
