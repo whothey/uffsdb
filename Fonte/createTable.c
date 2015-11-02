@@ -62,8 +62,15 @@ void createTable(rc_insert *t) {
     }
     int i;
     for(i=0; i < t->N; i++){
-    	if (t->type[i] == 'S')
+    	if (t->type[i] == 'S'){
     		size = atoi(t->values[i]);
+    		if(size<1){
+			printf("Error: The size of varchar has to be positive. Varchar(%d) is not allowed.\n", size);
+			free(tableName);
+               		freeTable(tab);
+			return;		
+		}
+    	}
     	else if (t->type[i] == 'I')
     		size = sizeof(int);
     	else if (t->type[i] == 'D')
