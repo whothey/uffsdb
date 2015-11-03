@@ -99,10 +99,10 @@ int typesCompatible(char table_type, char insert_type) {
 }
 
 // Busca o valor na inserção *s_insert designado à *columnName.
-// Se não existe, retorna 0, 0.0 ou \0
+// Se não existe, retorna \0
 char *getInsertedValue(rc_insert *s_insert, char *columnName, table *tabela) {
 	int i;
-	char tipo, *noValue;
+	//char tipo, *noValue;
 
 	for (i = 0; i < s_insert->N; i++) {
 		if (objcmp(s_insert->columnName[i], columnName) == 0) {
@@ -110,17 +110,7 @@ char *getInsertedValue(rc_insert *s_insert, char *columnName, table *tabela) {
 		}
 	}
 
-	tipo = retornaTamanhoTipoDoCampo(columnName, tabela);
-	noValue = (char *)malloc(sizeof(char)*3);
-
-	if (tipo == 'I') {
-		noValue = "0";
-	} else if (tipo == 'D') {
-		noValue = "0.0";
-	} else
-		noValue[0] = '\0';
-
-	return noValue;
+	return '\0';
 }
 
 // Busca o tipo do valor na inserção *s_insert do valor que irá para *columnName
