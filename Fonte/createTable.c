@@ -60,11 +60,14 @@ void createTable(rc_insert *t) {
         freeTable(tab);
         return;
     }
+
+	
+
     int i;
     for(i=0; i < t->N; i++){
     	if (t->type[i] == 'S')
-    		size = atoi(t->values[i]);
-    	else if (t->type[i] == 'I')
+    		size = atoi(t->values[i]);  	
+	else if (t->type[i] == 'I')
     		size = sizeof(int);
     	else if (t->type[i] == 'D')
     		size = sizeof(double);
@@ -80,6 +83,10 @@ void createTable(rc_insert *t) {
     	}
 
         tab = adicionaCampo(tab, t->columnName[i], t->type[i], size, t->attribute[i], fkTable, fkColumn);
+	if(size < 1){
+		printf("ERROR: Size of column is too small\n");
+		return;
+	}  
         if((objcmp(fkTable, "") != 0) || (objcmp(fkColumn, "") != 0)){
             if(verifyFK(fkTable, fkColumn) == 0){
     			printf("ERROR: attribute FK cannot be referenced\n");
