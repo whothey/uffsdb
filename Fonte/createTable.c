@@ -60,14 +60,22 @@ void createTable(rc_insert *t) {
         freeTable(tab);
         return;
     }
-
-	
-
     int i;
     for(i=0; i < t->N; i++){
-    	if (t->type[i] == 'S')
-    		size = atoi(t->values[i]);  	
-	else if (t->type[i] == 'I')
+    	if (t->type[i] == 'S'){
+    		size = atoi(t->values[i]);
+    		if(size<1){
+			printf("Error: The size of varchar has to be %s. ", (size==0? "greater than zero" : (t->values[i][0]=='-'? "positive": "smaller")));  
+			if(size<0&&t->values[i][0]!='-')
+				printf("Varchar(%s) is not allowed.\n", t->values[i]);
+			else
+				printf("Varchar(%d) is not allowed.\n", size); 
+			free(tableName);
+               		freeTable(tab);
+			return;		
+		}
+    	}
+    	else if (t->type[i] == 'I')
     		size = sizeof(int);
     	else if (t->type[i] == 'D')
     		size = sizeof(double);
