@@ -57,3 +57,22 @@ double convertD(char u[]) {
     return get_inteiro(u)+get_decimal(u);
     //Soma inteiro com decimal.ss
 }
+
+double doubAbs(double n){
+	if(n<0)
+		return n*-1;
+	else
+		return n;
+}
+
+int compDtoD(double a, double b){
+	//float e = 0.000000001;
+	//printf("a-b=%lf\n",a-b); 
+	//if (abs(a - b) <e)
+	//printf("X:%d from %lf\n", (int)(abs(a-b)*100000000), doubAbs(a-b));
+	if(((int)(doubAbs(a-b)*100000000))==0)
+		return 0;
+	else	
+		return 1;
+	
+}
