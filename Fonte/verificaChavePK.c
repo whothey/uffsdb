@@ -63,7 +63,7 @@ int verificaChavePK(char *nomeTabela, column *c, char *nomeCampo, char *valorCam
                     } else if (pagina[j].tipoCampo == 'D'){
                         double *nn = (double *)&pagina[j].valorCampo[0];
 
-                        if (*nn == atof(valorCampo)){
+                        if (compDtoD((double)*nn, atof(valorCampo))==0){
                             free(pagina);
                             free(bufferpoll);
                             free(tabela);
