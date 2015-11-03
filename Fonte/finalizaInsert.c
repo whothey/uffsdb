@@ -3,7 +3,7 @@
 
 int finalizaInsert(char *nome, column *c){
     column *auxC, *temp;
-    int i = 0, x = 0, t, erro, j = 0, flag=0;
+    int i = 0, x = 0, t, erro, j = 0 , flag=0;
     FILE *dados;
 
     struct fs_objects objeto,dicio; // Le dicionario
@@ -112,8 +112,6 @@ int finalizaInsert(char *nome, column *c){
     for(auxC = c, t = 0; auxC != NULL; auxC = auxC->next, t++){
         if (t >= dicio.qtdCampos)
             t = 0;
-    
-
 
         if (auxT[t].tipo == 'S'){ // Grava um dado do tipo string.
 
@@ -168,10 +166,7 @@ int finalizaInsert(char *nome, column *c){
             x = 0;
 			flag=0;
             while (x < strlen(auxC->valorCampo)){
-				if(auxC->valorCampo[x] == '-'){
-					flag=1;
-				}
-                else if((auxC->valorCampo[x] < 48 || auxC->valorCampo[x] > 57) && (auxC->valorCampo[x] != 46)){
+                if((auxC->valorCampo[x] < 48 || auxC->valorCampo[x] > 57) && (auxC->valorCampo[x] != 46)){
                     printf("ERROR: column \"%s\" expect double.\n", auxC->nomeCampo);
 					free(tab); // Libera a memoria da estrutura.
 					free(tab2); // Libera a memoria da estrutura.
