@@ -183,6 +183,7 @@ int finalizaInsert(char *nome, column *c){
 			else
 	            valorDouble = convertD(auxC->valorCampo);
 
+
             fwrite(&valorDouble,sizeof(valorDouble),1,dados);
         }
         else if (auxT[t].tipo == 'C'){ // Grava um dado do tipo char.
