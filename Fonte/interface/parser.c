@@ -62,6 +62,14 @@ void setValueInsert(char *nome, char type) {
     GLOBAL_DATA.type    = realloc(GLOBAL_DATA.type, (GLOBAL_PARSER.val_count+1)*sizeof(char));
 
     // Adiciona o valor no vetor de strings
+    nome -= sizeof(char);
+    if(*nome != '-'){
+		if(*(nome-1) == '-' && *nome == ' ')
+			*nome = '-'; 
+		else
+			nome += sizeof(char);
+	}
+			
     GLOBAL_DATA.values[GLOBAL_PARSER.val_count] = malloc(sizeof(char)*(strlen(nome)+1));
     if (type == 'I' || type == 'D') {
         strcpy(GLOBAL_DATA.values[GLOBAL_PARSER.val_count], nome);

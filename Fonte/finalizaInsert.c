@@ -3,7 +3,7 @@
 
 int finalizaInsert(char *nome, column *c){
     column *auxC, *temp;
-    int i = 0, x = 0, t, erro, j = 0;
+    int i = 0, x = 0, t, erro, j = 0, flag=0;
     FILE *dados;
 
     struct fs_objects objeto,dicio; // Le dicionario
@@ -134,7 +134,9 @@ int finalizaInsert(char *nome, column *c){
         } else if (auxT[t].tipo == 'I'){ // Grava um dado do tipo inteiro.
             i = 0;
             while (i < strlen(auxC->valorCampo)){
-                if (auxC->valorCampo[i] < 48 || auxC->valorCampo[i] > 57){
+				if(auxC->valorCampo[i] == '-')
+					flag=1;
+               else if (auxC->valorCampo[i] < 48 || auxC->valorCampo[i] > 57){
                     printf("ERROR: column \"%s\" expectet integer.\n", auxC->nomeCampo);
 					free(tab); // Libera a memoria da estrutura.
 					free(tab2); // Libera a memoria da estrutura.
@@ -153,8 +155,12 @@ int finalizaInsert(char *nome, column *c){
 
         } else if (auxT[t].tipo == 'D'){ // Grava um dado do tipo double.
             x = 0;
+			flag=0;
             while (x < strlen(auxC->valorCampo)){
-                if((auxC->valorCampo[x] < 48 || auxC->valorCampo[x] > 57) && (auxC->valorCampo[x] != 46)){
+				if(auxC->valorCampo[x] == '-'){
+					flag=1;
+				}
+                else if((auxC->valorCampo[x] < 48 || auxC->valorCampo[x] > 57) && (auxC->valorCampo[x] != 46)){
                     printf("ERROR: column \"%s\" expect double.\n", auxC->nomeCampo);
 					free(tab); // Libera a memoria da estrutura.
 					free(tab2); // Libera a memoria da estrutura.
@@ -165,8 +171,12 @@ int finalizaInsert(char *nome, column *c){
                 }
                 x++;
             }
+			double valorDouble;
+			if(flag)
+				valorDouble = atof(auxC->valorCampo);
+			else
+	            valorDouble = convertD(auxC->valorCampo);
 
-            double valorDouble = convertD(auxC->valorCampo);
             fwrite(&valorDouble,sizeof(valorDouble),1,dados);
         }
         else if (auxT[t].tipo == 'C'){ // Grava um dado do tipo char.
