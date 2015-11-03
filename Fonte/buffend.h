@@ -503,7 +503,20 @@ void showDB();
  */
 void clear();
 
-
 void freeTp_table(tp_table **tabela, int n);
 void freeTable(table *tabela);
 void freeColumn(column *colunas);
+
+int compDtoD(double a, double b);
+/*
+*  Essa função é utilizada para comparar duas variáveis double e retorna:
+*	0: Se forem iguais
+*	1: Se forem diferentes
+*  Em virtude da maneira como as variáveis double são representadas, essas variáveis não podem ser comparadas
+*  diretamente, sendo necessário atribuir uma margem de erro.
+*/
+
+double doubAbs(double n);
+/*
+* Retorna o valor absoluto de uma variável double;
+*/
