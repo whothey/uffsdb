@@ -141,10 +141,10 @@ void dropDatabase(char *db_name) {
 	        	fseek(DB, ((LEN_DB_NAME*2+1)*i), SEEK_SET); 	// posiciona o cabecote sobre o byte de validade
 	        	fwrite(&valid ,sizeof(char), 1, DB);			// do banco e apaga ele
 
-	        	char directory[LEN_DB_NAME*2] = "rm data/";
+	        	char directory[LEN_DB_NAME + 14] = "rm data/";
+			vec_directory[i][LEN_DB_NAME-1] = '\0';
 	        	strcat(directory, vec_directory[i]);
 	        	strcat(directory, " -R\0");
-
 	        	system(directory);
 
 	        	fclose(DB);

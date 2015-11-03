@@ -13,7 +13,7 @@ Introdução
 
 Sobre o dicionário de dados e o esquema:
 	Por definição, o dicionário de dados está no aquivo fs_object.dat e o esquema em fs_schema.dat, os mesmos serão criados no diretório raiz da pasta dos fontes.
-	São carregados na memória pelas funçõe leObjeto(nTabela) e leSchema(objeto) e tem a seguinte estrutura:
+	São carregados na memória pelas funções leObjeto(nTabela) e leSchema(objeto) e tem a seguinte estrutura:
 
 	struct fs_objects { // Estrutura usada para carregar fs_object.dat
 		char nome[20];
