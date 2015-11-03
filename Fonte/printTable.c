@@ -106,8 +106,16 @@ void printTable(char *tbl){
 		}
 		if(ipk){	//printf PK's
 			printf("Indexes:\n");
-			for(l = 0; l < ipk; l++){
-				printf("\t\"%s_pkey\" PRIMARY KEY (%s)\n", tbl, pk[l]);
+			if(ipk > 1){
+				printf("\t\"%s_pkey\" PRIMARY KEY (",tbl);
+				for(l = 0; l < ipk-1; l++)
+					printf("%s,",pk[l]);
+				printf("%s)\n",pk[l] );
+
+			
+			}else
+				for(l = 0; l < ipk; l++){
+					printf("\t\"%s_pkey\" PRIMARY KEY (%s)\n", tbl, pk[l]);
 			}
 		}
 		if(ifk){	//printf FK's

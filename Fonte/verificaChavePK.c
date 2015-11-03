@@ -8,11 +8,17 @@
                 SUCCESS,
                 ERRO_DE_PARAMETRO,
                 ERRO_CHAVE_PRIMARIA
+                ERRO_CHAVE_PRIMARIA_NULA
    ---------------------------------------------------------------------------------------------*/
 
 int verificaChavePK(char *nomeTabela, column *c, char *nomeCampo, char *valorCampo) {
     int j, x, erro, page;
     column *pagina = NULL;
+
+    if(valorCampo[0] == '\0' ){ //verifica se o valor da pk é vazio
+        return ERRO_CHAVE_PRIMARIA_NULA;
+    }
+
 
     struct fs_objects objeto;
     tp_table *tabela;
