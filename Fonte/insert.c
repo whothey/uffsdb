@@ -36,6 +36,13 @@ void insert(rc_insert *s_insert) {
 			for (esquema = tabela->esquema; esquema != NULL; esquema = esquema->next) {
 				if(typesCompatible(esquema->tipo,getInsertedType(s_insert, esquema->nome, tabela))) {
 					colunas = insereValor(tabela, colunas, esquema->nome, getInsertedValue(s_insert, esquema->nome, tabela));
+					
+					if (!colunas) { //Caso retorne null no insereValor
+							
+							flag = 1;
+					
+					}
+					
 				} else {
 					printf("ERROR: data type invalid to column '%s' of relation '%s' (expected: %c, received: %c).\n", esquema->nome, 
 							tabela->nome, esquema->tipo, getInsertedType(s_insert, esquema->nome, tabela));
