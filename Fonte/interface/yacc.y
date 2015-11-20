@@ -30,7 +30,7 @@ int yywrap() {
         CHAR        PRIMARY     KEY         REFERENCES  DATABASE
         DROP        OBJECT      NUMBER      VALUE       QUIT
         LIST_TABLES LIST_TABLE  ALPHANUM    CONNECT     HELP
-        LIST_DBASES CLEAR;
+        LIST_DBASES CLEAR WHERE IN AND OR EXISTS;
 
 start: insert | select | create_table | create_database | drop_table | drop_database
      | table_attr | list_tables | connection | exit_program | semicolon {GLOBAL_PARSER.consoleFlag = 1; return 0;}
@@ -106,6 +106,8 @@ table: OBJECT {setObjName(yytext);};
 
 opt_column_list: /*optional*/ | parentesis_open column_list parentesis_close;
 
+column_list_select: '*' | column_list;
+
 column_list: column | column ',' column_list;
 
 column: OBJECT {setColumnInsert(yytext);};
@@ -140,6 +142,8 @@ table_fk: OBJECT {setColumnFKTableCreate(yytext);};
 
 column_fk: OBJECT {setColumnFKColumnCreate(yytext);};
 
+filter: WHERE IN  
+
 /* DROP TABLE */
 drop_table: DROP TABLE {setMode(OP_DROP_TABLE);} OBJECT {setObjName(yytext);} semicolon  {return 0;};
 
@@ -151,6 +155,9 @@ drop_database: DROP DATABASE {setMode(OP_DROP_DATABASE);} OBJECT {setObjName(yyt
 
 /* SELECT */
 select: SELECT {setMode(OP_SELECT_ALL);} '*' FROM table_select semicolon {return 0;};
+
+/* SELECT */
+/*select: SELECT {setMode(OP_SELECT);} column_list_select FROM table_select semicolon {return 0;};*/
 
 table_select: OBJECT {setObjName(yytext);};
 

@@ -10,28 +10,34 @@
 
 %%
 
-(?i:INSERT)						return INSERT;
-(?i:INTO)						return INTO;
-(?i:VALUES)						return VALUES;
-(?i:SELECT)						return SELECT;
-(?i:FROM)						return FROM;
-(?i:CREATE)						return CREATE;
-(?i:TABLE)						return TABLE;
-(?i:INTEGER)					return INTEGER;
-(?i:INT)						return INTEGER;
-(?i:VARCHAR)					return VARCHAR;
-(?i:CHAR)						return CHAR;
-(?i:DOUBLE)						return DOUBLE;
-(?i:PRIMARY)					return PRIMARY;
-(?i:KEY)						return KEY;
-(?i:REFERENCES)					return REFERENCES;
-(?i:DATABASE)					return DATABASE;
-(?i:DROP)						return DROP;
-help							return HELP;
-[\\][h]							return HELP;
-[\\][h]+[^\n]*					{invalidCommand(yytext);};
-[\\][\?]						return HELP;
-(?i:CLEAR)						return CLEAR;
+(?i:INSERT)                                             return INSERT;
+(?i:INTO)                                               return INTO;
+(?i:VALUES)                                             return VALUES;
+(?i:SELECT)                                             return SELECT;
+(?i:WHERE)                                              return WHERE;
+(\*)                                                    return ALL_COLUMNS;
+(?i:AND)                                                return AND;
+(?i:OR)                                                 return OR;
+(?i:IN)                                                 return IN;
+(?i:EXISTS)                                             return EXISTS;
+(?i:FROM)                                               return FROM;
+(?i:CREATE)                                             return CREATE;
+(?i:TABLE)                                              return TABLE;
+(?i:INTEGER)                                    return INTEGER;
+(?i:INT)                                                return INTEGER;
+(?i:VARCHAR)                                    return VARCHAR;
+(?i:CHAR)                                               return CHAR;
+(?i:DOUBLE)                                             return DOUBLE;
+(?i:PRIMARY)                                    return PRIMARY;
+(?i:KEY)                                                return KEY;
+(?i:REFERENCES)                                 return REFERENCES;
+(?i:DATABASE)                                   return DATABASE;
+(?i:DROP)                                               return DROP;
+help                                                    return HELP;
+[\\][h]                                                 return HELP;
+[\\][h]+[^\n]*                                  {invalidCommand(yytext);};
+[\\][\?]                                                return HELP;
+(?i:CLEAR)                                              return CLEAR;
 
 [,]								return *yytext;
 [;]								return *yytext;
