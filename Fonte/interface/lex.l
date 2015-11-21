@@ -15,7 +15,7 @@
 (?i:VALUES)                                             return VALUES;
 (?i:SELECT)                                             return SELECT;
 (?i:WHERE)                                              return WHERE;
-(\*)                                                    return ALL_COLUMNS;
+
 (?i:AND)                                                return AND;
 (?i:OR)                                                 return OR;
 (?i:IN)                                                 return IN;
