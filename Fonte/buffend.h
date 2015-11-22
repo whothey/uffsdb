@@ -62,27 +62,6 @@ typedef struct rc_insert {
     char   **fkColumn;          // Recebe o nome da coluna FK
 }rc_insert;
 
-/**
- * rc_filters
- * Guarda os filtros (wheres) á serem executados pela consulta
- */
-typedef struct rc_filter {
-  int type;                      // Constantes do YACC: WHERE, IN e EXISTS
-  
-} rc_filter;
-
-typedef struct rc_join {
-  char *table;
-  rc_filter condition;
-} rc_join;
-
-typedef struct rc_select {
-  char **projection;
-  char *tables;
-  rc_filter *filters;
-  rc_join *join;
-} rc_select;
-
 typedef struct rc_parser {
     int         mode;           // Modo de operação (definido em /interface/parser.h)
     int         parentesis;     // Contador de parenteses abertos
