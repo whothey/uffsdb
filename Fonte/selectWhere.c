@@ -99,7 +99,7 @@ int selectWhere(list_value *value){
 	int b;
 
 	//Vai parar quando não tiver mais AND ou OR. TypeLogic=N (N de NULL )
-	if(value->typeLogic == 'N'){
+	if(value == NULL){
 
 		if(value->typeValue == 'D')//Caso double, manda o dvalue.
 			return doOperation((double*)&value->dvalue[0], (double*)&value->dvalue[1], value->typeOp, value->typeValue);

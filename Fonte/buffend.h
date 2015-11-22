@@ -14,6 +14,10 @@
 #define DB_NOT_EXISTS 24
 #define OP_MENOR_IGAUL_QUE '@'
 #define OP_MAIOR_IGUAL_QUE '#'
+#define FILTER_COLUMN   20
+#define FILTER_VALUE    30 //Double
+#define FILTER_ALPHANUM 40
+#define FILTER_NUMBER   50
 
 
 struct fs_objects { // Estrutura usada para carregar fs_objects.dat
@@ -577,3 +581,6 @@ double doubAbs(double n);
 /*
 * Retorna o valor absoluto de uma variável double;
 */
+
+int selectWhere(list_value *value);
+
