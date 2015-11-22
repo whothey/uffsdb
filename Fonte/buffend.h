@@ -84,6 +84,16 @@ typedef struct db_connected {
     int conn_active;
 }db_connected;
 
+typedef struct list_value{
+	char	typeValue;
+	char	typeOp;
+	char	typeLogic;
+	int		ivalue[1];
+	double	dvalue[1];
+	char	*sname[2];
+	struct list_value *next;
+}list_value;
+
 // Union's utilizados na conversão de variáveis do tipo inteiro e double.
 
 union c_double{
