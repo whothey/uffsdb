@@ -12,6 +12,8 @@
 #define LEN_DB_NAME 20
 #define DB_EXISTS 1
 #define DB_NOT_EXISTS 24
+#define OP_MENOR_IGAUL_QUE '@'
+#define OP_MAIOR_IGUAL_QUE '#'
 
 
 struct fs_objects { // Estrutura usada para carregar fs_objects.dat
@@ -83,6 +85,51 @@ typedef struct db_connected {
     char *db_name;
     int conn_active;
 }db_connected;
+
+/**
+ * qr_filters
+ * Guarda os filtros (wheres) á serem executados pela consulta
+ *
+ * Uma boa maneira de pensar, caso a estrutura tenha ficado confusa é
+ * que ela está implementada para SELECTS, exemplo:
+ * SELECT * FROM tabela1 WHERE col1  =   2    AND    col2  =  'A' OR col3 = 'B';
+ * Posição na estrutura:      (left op right logic   left op right...)
+ */
+typedef struct qr_filter {
+  char typeLogico; // Operador lógico em relação á outras comparações, constantes OP_AND e OP_OR
+  char *left;        // Operador da esquerda do filtro (coluna)
+  char left_type;    // Tipo do operador da esquerda (coluna ou valor) V para valor
+  char typeOp;       // Operador lógico da comparação (>, <, =, <>...)
+  char *right;       // Operador da direita do filtro
+  char right_type;    // Tipo do operador da direita (coluna ou valor) V para valor
+  char typeAtt;		  //Tipo do atributo, seja C p/ char, D p/ double, I p/ int
+} qr_filter;
+
+typedef struct qr_join {
+  char *table;
+  qr_filter condition;
+} qr_join;
+
+/**
+ * qr_select
+ *
+ * Estrutura para gerenciar os termos interpretados pelo YaCC e
+ * facilitar o acesso em nível da consulta.
+ */
+typedef struct qr_select {
+  char **projection;  // Projeção do select
+  int nprojection;
+  
+  char *tables;       // Tabelas envolvidas no SELECT
+  int ntables;
+  
+  qr_filter *filters; // Filtros (WHEREs)
+  int nfilters;
+  
+  qr_join *join;      // Join -- será implementado posteriormente
+  int njoins;
+} qr_select;
+
 
 typedef struct list_value{
 	char	typeValue;
