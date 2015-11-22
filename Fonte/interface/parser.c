@@ -14,6 +14,17 @@ rc_insert GLOBAL_DATA;
  */
 rc_parser GLOBAL_PARSER;
 
+/**
+ * Estrutura auxiliar do select.
+ */
+qr_select GLOBAL_SELECT;
+
+/**
+ * Estrutura auxiliar do atual 'where'
+ */
+qr_filter TEMP_FILTER;
+int       TEMP_FILTER_POSITION;
+
 void connect(char *nome) {
     int r;
     r = connectDB(nome);
@@ -205,6 +216,25 @@ void clearGlobalStructs() {
     GLOBAL_PARSER.col_count         = 0;
     GLOBAL_PARSER.val_count         = 0;
     GLOBAL_PARSER.step              = 0;
+
+    // Clear select struct
+    for (i = 0; i < GLOBAL_SELECT.nprojection; i++)
+      free(GLOBAL_SELECT.projection[i]);
+
+    free(GLOBAL_SELECT.projection);
+    GLOBAL_SELECT.projection = NULL;
+
+    /* for (i = 0; i < GLOBAL_SELECT.nfilters; i++) */
+    /*   free(GLOBAL_SELECT.filters[i]); */
+
+    /* free(GLOBAL_SELECT.filters); */
+    /* GLOBAL_SELECT.filters = NULL; */
+  
+    /* for (i = 0; i < GLOBAL_SELECT.njoins; i++) */
+    /*   free(GLOBAL_SELECT.join[i]); */
+
+    /* free(GLOBAL_SELECT.join); */
+    /* GLOBAL_SELECT.join = NULL; */
 }
 
 void setMode(char mode) {
@@ -271,7 +301,7 @@ int interface() {
                 case OP_DROP_DATABASE:
                 case OP_CREATE_TABLE:
                 case OP_DROP_TABLE:
-                case OP_SELECT_ALL:
+		  // case OP_SELECT_ALL:
                 case OP_INSERT:
                     if (GLOBAL_PARSER.step == 1) {
                         GLOBAL_PARSER.consoleFlag = 0;
@@ -318,3 +348,112 @@ void yyerror(char *s, ...) {
     fprintf(stderr, "\n");
     */
 }
+
+/**
+ * SELECT
+ */
+
+void start_select()
+{
+  GLOBAL_SELECT.nprojection = 0;
+  free(GLOBAL_SELECT.projection);
+  GLOBAL_SELECT.projection = NULL;
+
+  GLOBAL_SELECT.ntables = 0;
+  free(GLOBAL_SELECT.tables);
+  GLOBAL_SELECT.tables = NULL;
+
+  GLOBAL_SELECT.nfilters = 0;
+  free(GLOBAL_SELECT.filters);
+  GLOBAL_SELECT.filters = NULL;
+
+  GLOBAL_SELECT.njoins = 0;
+  free(GLOBAL_SELECT.join);
+  GLOBAL_SELECT.join = NULL;
+}
+
+int add_column_to_projection(char **col_name)
+{
+  int projIndex;
+  char **temp = NULL;
+
+  projIndex = GLOBAL_SELECT.nprojection++; // Atualizando indice da projecao
+  temp      = realloc(GLOBAL_SELECT.projection, sizeof(char **) * GLOBAL_SELECT.nprojection);
+
+  // Confere realloc
+  if (temp == NULL) {
+    fprintf(stderr, "Can't realloc column projection!");
+    GLOBAL_PARSER.noerror = 0;
+    
+    return 0;
+  }
+
+  GLOBAL_SELECT.projection = temp; // Sucesso
+  GLOBAL_SELECT.projection[projIndex] = malloc(sizeof(char) * (strlen(*col_name) + 1));
+  
+  // Copia nome da coluna adicionando \0
+  strcpylower(GLOBAL_SELECT.projection[projIndex], *col_name);
+  GLOBAL_SELECT.projection[projIndex][strlen(*col_name)] = '\0';
+
+  return 1;
+}
+
+int create_new_filter()
+{
+  printf("creating new filter\n");
+  TEMP_FILTER.typeLogico = 'N';
+  free(TEMP_FILTER.left);
+  TEMP_FILTER.left_type = 'N';
+  TEMP_FILTER.typeOp = '=';
+  free(TEMP_FILTER.right);
+  TEMP_FILTER.right_type = 'N';
+
+  return 1;
+}
+
+int set_filter_value_pos(int position)
+{
+  printf("setting to pos %d\n", position);
+  if (position == FILTER_POS_LEFT)
+    TEMP_FILTER_POSITION = position;
+  else
+    TEMP_FILTER_POSITION = FILTER_POS_RIGHT;
+
+  return 1;
+}
+
+int set_filter_op(char **op)
+{
+  printf("operation: %s", *op);
+
+  return 1;
+}
+
+int add_filter_condition(char **name, int type)
+{
+  printf("added filter: %s: ", *name);
+  
+  switch (type) {
+  case FILTER_VALUE:
+    printf("value\n");
+    break;
+    
+  case FILTER_COLUMN:
+    printf("column\n");
+    break;
+    
+  case FILTER_ALPHANUM:
+    printf("alphanum\n");
+    break;
+
+  case FILTER_NUMBER:
+    printf("number\n");
+    break;
+
+  default: printf("BUG!\n");
+  }
+
+  return 1;
+}
+
+int add_filter_to_select();

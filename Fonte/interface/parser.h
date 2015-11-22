@@ -11,6 +11,69 @@
 #define OP_SELECT_ALL 		6
 #define OP_SELECT               7
 
+/**
+ * FILTERS
+ */
+// Filter positions
+#define FILTER_POS_LEFT  0
+#define FILTER_POS_RIGHT 1
+
+// Filter types
+#define FILTER_COLUMN   20
+#define FILTER_VALUE    30
+#define FILTER_ALPHANUM 40
+#define FILTER_NUMBER   50
+
+/**
+ * qr_filters
+ * Guarda os filtros (wheres) á serem executados pela consulta
+ *
+ * Uma boa maneira de pensar, caso a estrutura tenha ficado confusa é
+ * que ela está implementada para SELECTS, exemplo:
+ * SELECT * FROM tabela1 WHERE col1  =   2    AND    col2  =  'A' OR col3 = 'B';
+ * Posição na estrutura:      (left op right logic   left op right...)
+ */
+typedef struct qr_filter {
+  char typeLogico; // Operador lógico em relação á outras comparações, constantes OP_AND e OP_OR
+  char *left;        // Operador da esquerda do filtro (coluna)
+  char left_type;    // Tipo do operador da esquerda (coluna ou valor)
+  char typeOp;       // Operador lógico da comparação (>, <, =, <>...)
+  char *right;       // Operador da direita do filtro
+  char right_type;    // Tipo do operador da direita (coluna ou valor)
+} qr_filter;
+
+typedef struct qr_join {
+  char *table;
+  qr_filter condition;
+} qr_join;
+
+/**
+ * qr_select
+ *
+ * Estrutura para gerenciar os termos interpretados pelo YaCC e
+ * facilitar o acesso em nível da consulta.
+ */
+typedef struct qr_select {
+  char **projection;  // Projeção do select
+  int nprojection;
+  
+  char *tables;       // Tabelas envolvidas no SELECT
+  int ntables;
+  
+  qr_filter *filters; // Filtros (WHEREs)
+  int nfilters;
+  
+  qr_join *join;      // Join -- será implementado posteriormente
+  int njoins;
+} qr_select;
+
+/**
+ * Select aux
+ */
+extern qr_select GLOBAL_SELECT; // Current select scope
+extern qr_filter TEMP_FILTER; // Temp filter creation
+extern int       TEMP_FILTER_POSITION;
+
 /* Estrutura global que guarda as informações obtidas pelo yacc
  * na identificação dos tokens
  */
@@ -102,3 +165,38 @@ void clearGlobalStructs();
  * dos tokens iniciais.
  */
 void setMode(char mode);
+
+
+/*********************************************************
+ * SELECT
+ *********************************************************/
+/** 
+ * Restarts the global select state
+ */
+void start_select();
+
+/** 
+ * Add an column to select struct
+ */
+int add_column_to_projection(char **column);
+
+int set_select_table(char* table);
+
+/**
+ * Creates a new filter in Global auxiliar struct
+ */
+int create_new_filter();
+
+/**
+ * Set next filter value position in 'filter struct' (qr_filter)
+ */
+int set_filter_value_pos(int position);
+
+int set_filter_op(char **op);
+
+/**
+ * Add filter condition and inform it's type
+ */
+int add_filter_condition(char **name, int type);
+
+int add_filter_to_select();

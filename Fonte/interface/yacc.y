@@ -30,7 +30,8 @@ int yywrap() {
         CHAR        PRIMARY     KEY         REFERENCES  DATABASE
         DROP        OBJECT      NUMBER      VALUE       QUIT
         LIST_TABLES LIST_TABLE  ALPHANUM    CONNECT     HELP
-        LIST_DBASES CLEAR WHERE IN AND OR EXISTS ALL_COLUMNS;
+        LIST_DBASES CLEAR WHERE IN AND OR EXISTS ALL_COLUMNS
+        COMP_OP;
 
 start: insert | select | create_table | create_database | drop_table | drop_database
      | table_attr | list_tables | connection | exit_program | semicolon {GLOBAL_PARSER.consoleFlag = 1; return 0;}
@@ -106,10 +107,8 @@ table: OBJECT {setObjName(yytext);};
 
 opt_column_list: /*optional*/ | parentesis_open column_list parentesis_close;
 
-column_list_select: '*' | column_list;
-
+// INSERT COLUMNS
 column_list: column | column ',' column_list;
-
 column: OBJECT {setColumnInsert(yytext);};
 
 value_list: value | value ',' value_list;
@@ -142,8 +141,6 @@ table_fk: OBJECT {setColumnFKTableCreate(yytext);};
 
 column_fk: OBJECT {setColumnFKColumnCreate(yytext);};
 
-/* filter: WHERE IN   */
-
 /* DROP TABLE */
 drop_table: DROP TABLE {setMode(OP_DROP_TABLE);} OBJECT {setObjName(yytext);} semicolon  {return 0;};
 
@@ -153,8 +150,33 @@ create_database: CREATE DATABASE {setMode(OP_CREATE_DATABASE);} OBJECT {setObjNa
 /* DROP DATABASE */
 drop_database: DROP DATABASE {setMode(OP_DROP_DATABASE);} OBJECT {setObjName(yytext);} semicolon {return 0;};
 
-/* SELECT */
-select: SELECT {setMode(OP_SELECT_ALL);} column_list_select FROM table_select semicolon {return 0;};
+/***      ***
+ ** SELECT **
+ ***      ***/
+
+// SELECT COLUMNS
+column_list_projection: {add_column_to_projection(yytext);} '*' | column_projection | column_projection ',' column_list_projection;
+column_projection: OBJECT {add_column_to_projection(yytext);};
+
+// Filters
+filter: {set_filter_value_pos(FILTER_POS_LEFT);} column_value {printf("teste\n");} COMP_OP {set_filter_op(yytext);} column_value;
+
+// {set_filter_op(yytext); set_filter_value_pos(FILTER_POS_RIGHT);}
+
+logic_op: AND | OR;
+
+column_value: VALUE  {add_filter_condition(yytext, FILTER_VALUE);}
+            | NUMBER {add_filter_condition(yytext, FILTER_NUMBER);}
+            | ALPHANUM {add_filter_condition(yytext, FILTER_ALPHANUM);}
+            | OBJECT {add_filter_condition(yytext, FILTER_COLUMN);}
+            ;
+
+where_cond: /* optional */ | WHERE {create_new_filter();} filter logic_chain;
+
+logic_chain: /* optional */ | logic_op filter logic_chain;
+
+// Main select
+select: SELECT {setMode(OP_SELECT_ALL); start_select();} column_list_projection FROM table_select where_cond semicolon {return 0;};
 
 /* SELECT */
 /*select: SELECT {setMode(OP_SELECT);} column_list_select FROM table_select semicolon {return 0;};*/
