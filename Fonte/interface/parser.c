@@ -439,9 +439,9 @@ int set_filter_value_pos(int position)
 
 int set_filter_op(char **op)
 {
-  if (strcmp(*op, ">="))
+  if (strcmp(*op, ">=") == 0)
     TEMP_FILTER->typeOp = OP_MAIOR_IGUAL_QUE;
-  else if (strcmp(*op, "<="))
+  else if (strcmp(*op, "<=") == 0)
     TEMP_FILTER->typeOp = OP_MENOR_IGUAL_QUE;
   else
     TEMP_FILTER->typeOp = **op;
@@ -527,5 +527,15 @@ void dump_select()
   }
 
   printf("Tabela: %s\n", GLOBAL_SELECT.tables);
-  printf("Quantidade de wheres: %d\n", GLOBAL_SELECT.nfilters);
+  printf("Quantidade de filtros: %d\n", GLOBAL_SELECT.nfilters);
+
+  for (i = 0; i < GLOBAL_SELECT.nfilters; i++) {
+    printf("Filtro #%02d:\n", i + 1);
+    dump_where(GLOBAL_SELECT.filters[i]);
+  }
+}
+
+void dump_where(qr_filter filter)
+{
+  return;
 }

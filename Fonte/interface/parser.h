@@ -167,3 +167,5 @@ int add_filter_to_select();
  * Dump select struct
  */
 void dump_select();
+
+void dump_where(qr_filter filter);
