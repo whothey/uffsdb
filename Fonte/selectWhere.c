@@ -112,7 +112,7 @@ int selectWhere(list_value *value){
 
 	}
 	//Devo fazer cast.. (double *)&value->dvalue[0] .. Porque a próxima função eh constant * void.
-
+	printf("chegou no where :D\n");
 	b = selectWhere(value->next);
 
 	if(value->typeLogic == 'A'){ //Se for AND.
