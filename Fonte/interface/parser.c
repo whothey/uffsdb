@@ -276,7 +276,7 @@ int interface() {
                             break;
                         case OP_SELECT_ALL:
 			  // imprime(GLOBAL_DATA.objName);
-			  // dump_select();
+			  dump_select();
 			  doSelect(&GLOBAL_SELECT);
                             break;
                         case OP_CREATE_TABLE:
@@ -376,20 +376,12 @@ void start_select()
 
 int set_select_table(char **table)
 {
-  int i = 0;
-
-  while((*table)[i] != '\0') { printf("nofound\n"); i++; }
   GLOBAL_SELECT.tables = strdup(*table);
-  i = 0;
-  while(GLOBAL_SELECT.tables[i] != '\0') { printf("asfound\n"); i++; }
-  
   
   GLOBAL_SELECT.tables = malloc(sizeof(char *) * (strlen(*table) + 1));
   strcpy(GLOBAL_SELECT.tables, *table);
   GLOBAL_SELECT.tables[strlen(*table)] = '\0';
   GLOBAL_SELECT.ntables++;
-
-  printf("tab %s", GLOBAL_SELECT.tables);
   
   return 1;
 }
@@ -527,8 +519,13 @@ void dump_select()
   
   printf("Projeção: ");
 
-  for (i = 0; i < GLOBAL_SELECT.nprojection; i++)
-    printf("%s, ", GLOBAL_SELECT.projection[i]);
+  for (i = 0; i < GLOBAL_SELECT.nprojection; i++) {
+    if (i + 1 == GLOBAL_SELECT.nprojection)
+      printf("%s\n", GLOBAL_SELECT.projection[i]);
+    else
+      printf("%s, ", GLOBAL_SELECT.projection[i]);
+  }
 
-  printf("\n Tabela: %s", GLOBAL_SELECT.tables);
+  printf("Tabela: %s\n", GLOBAL_SELECT.tables);
+  printf("Quantidade de wheres: %d\n", GLOBAL_SELECT.nfilters);
 }
