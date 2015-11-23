@@ -159,11 +159,11 @@ column_list_projection: {add_column_to_projection(yytext);} '*' | column_project
 column_projection: OBJECT {add_column_to_projection(yytext);};
 
 // Filters
-filter: {set_filter_value_pos(FILTER_POS_LEFT);} column_value {printf("teste\n");} COMP_OP {set_filter_op(yytext);} column_value;
+filter: {create_new_filter(); set_filter_value_pos(FILTER_POS_LEFT);} column_value COMP_OP {set_filter_op(yytext); set_filter_value_pos(FILTER_POS_RIGHT);} column_value;
 
 // {set_filter_op(yytext); set_filter_value_pos(FILTER_POS_RIGHT);}
 
-logic_op: AND | OR;
+logic_op: AND {set_filter_logic_op(OP_LOGIC_AND);} | OR {set_filter_logic_op(OP_LOGIC_OR);};
 
 column_value: VALUE  {add_filter_condition(yytext, FILTER_VALUE);}
             | NUMBER {add_filter_condition(yytext, FILTER_NUMBER);}
@@ -171,9 +171,9 @@ column_value: VALUE  {add_filter_condition(yytext, FILTER_VALUE);}
             | OBJECT {add_filter_condition(yytext, FILTER_COLUMN);}
             ;
 
-where_cond: /* optional */ | WHERE {create_new_filter();} filter logic_chain;
+where_cond: /* optional */ | WHERE filter logic_chain;
 
-logic_chain: /* optional */ | logic_op filter logic_chain;
+logic_chain: /* optional */ {add_filter_to_select();} | logic_op {add_filter_to_select();} filter logic_chain;
 
 // Main select
 select: SELECT {setMode(OP_SELECT_ALL); start_select();} column_list_projection FROM table_select where_cond semicolon {return 0;};
@@ -181,7 +181,7 @@ select: SELECT {setMode(OP_SELECT_ALL); start_select();} column_list_projection 
 /* SELECT */
 /*select: SELECT {setMode(OP_SELECT);} column_list_select FROM table_select semicolon {return 0;};*/
 
-table_select: OBJECT {setObjName(yytext);};
+table_select: OBJECT {setObjName(yytext); set_select_table(yytext);};
 
 /* END */
 %%

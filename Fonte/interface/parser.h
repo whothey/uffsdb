@@ -19,59 +19,19 @@
 #define FILTER_POS_RIGHT 1
 
 // Filter types
-#define FILTER_COLUMN   20
-#define FILTER_VALUE    30
-#define FILTER_ALPHANUM 40
-#define FILTER_NUMBER   50
-
-/**
- * qr_filters
- * Guarda os filtros (wheres) á serem executados pela consulta
- *
- * Uma boa maneira de pensar, caso a estrutura tenha ficado confusa é
- * que ela está implementada para SELECTS, exemplo:
- * SELECT * FROM tabela1 WHERE col1  =   2    AND    col2  =  'A' OR col3 = 'B';
- * Posição na estrutura:      (left op right logic   left op right...)
- */
-typedef struct qr_filter {
-  char typeLogico; // Operador lógico em relação á outras comparações, constantes OP_AND e OP_OR
-  char *left;        // Operador da esquerda do filtro (coluna)
-  char left_type;    // Tipo do operador da esquerda (coluna ou valor)
-  char typeOp;       // Operador lógico da comparação (>, <, =, <>...)
-  char *right;       // Operador da direita do filtro
-  char right_type;    // Tipo do operador da direita (coluna ou valor)
-} qr_filter;
-
-typedef struct qr_join {
-  char *table;
-  qr_filter condition;
-} qr_join;
-
-/**
- * qr_select
- *
- * Estrutura para gerenciar os termos interpretados pelo YaCC e
- * facilitar o acesso em nível da consulta.
- */
-typedef struct qr_select {
-  char **projection;  // Projeção do select
-  int nprojection;
-  
-  char *tables;       // Tabelas envolvidas no SELECT
-  int ntables;
-  
-  qr_filter *filters; // Filtros (WHEREs)
-  int nfilters;
-  
-  qr_join *join;      // Join -- será implementado posteriormente
-  int njoins;
-} qr_select;
+#define FILTER_COLUMN   20 // Indica que o valor do filtro é uma coluna
+#define FILTER_VALUE    30 // Indica que o valor é um Double
+#define FILTER_ALPHANUM 40 // Indica que o valor é uma cadeia de caracteres 'ABC123'
+#define FILTER_NUMBER   50 // Indica que o valor é um inteiro
+#define FILTER_TYPE_VALUE    'D' // Indica com um caractere o valor do filtro, no caso, um Double
+#define FILTER_TYPE_NUMBER   'I' // ... Inteiro
+#define FILTER_TYPE_ALPHANUM 'C' // ... Cadeia de caracteres
 
 /**
  * Select aux
  */
 extern qr_select GLOBAL_SELECT; // Current select scope
-extern qr_filter TEMP_FILTER; // Temp filter creation
+extern qr_filter *TEMP_FILTER; // Temp filter creation
 extern int       TEMP_FILTER_POSITION;
 
 /* Estrutura global que guarda as informações obtidas pelo yacc
@@ -180,7 +140,10 @@ void start_select();
  */
 int add_column_to_projection(char **column);
 
-int set_select_table(char* table);
+/**
+ * Add to SELECT struct the table to select
+ */
+int set_select_table(char** table);
 
 /**
  * Creates a new filter in Global auxiliar struct
@@ -192,6 +155,9 @@ int create_new_filter();
  */
 int set_filter_value_pos(int position);
 
+/**
+ * Set the next filter operation
+ */
 int set_filter_op(char **op);
 
 /**
@@ -199,4 +165,9 @@ int set_filter_op(char **op);
  */
 int add_filter_condition(char **name, int type);
 
+int set_filter_logic_op(char op);
+
+/**
+ * Finish the current filter and add it to select struct
+ */
 int add_filter_to_select();

@@ -22,7 +22,7 @@ qr_select GLOBAL_SELECT;
 /**
  * Estrutura auxiliar do atual 'where'
  */
-qr_filter TEMP_FILTER;
+qr_filter *TEMP_FILTER;
 int       TEMP_FILTER_POSITION;
 
 void connect(char *nome) {
@@ -372,6 +372,14 @@ void start_select()
   GLOBAL_SELECT.join = NULL;
 }
 
+int set_select_table(char **table)
+{
+  GLOBAL_SELECT.tables = strdup(*table);
+  GLOBAL_SELECT.ntables++;
+  
+  return 1;
+}
+
 int add_column_to_projection(char **col_name)
 {
   int projIndex;
@@ -400,20 +408,21 @@ int add_column_to_projection(char **col_name)
 
 int create_new_filter()
 {
-  printf("creating new filter\n");
-  TEMP_FILTER.typeLogico = 'N';
-  free(TEMP_FILTER.left);
-  TEMP_FILTER.left_type = 'N';
-  TEMP_FILTER.typeOp = '=';
-  free(TEMP_FILTER.right);
-  TEMP_FILTER.right_type = 'N';
+  free(TEMP_FILTER);
+  TEMP_FILTER = (qr_filter *) malloc(sizeof(qr_filter));
+  
+  TEMP_FILTER->typeLogico = 'N';
+  free(TEMP_FILTER->left);
+  TEMP_FILTER->left_type = 'N';
+  TEMP_FILTER->typeOp = '=';
+  free(TEMP_FILTER->right);
+  TEMP_FILTER->right_type = 'N';
 
   return 1;
 }
 
 int set_filter_value_pos(int position)
 {
-  printf("setting to pos %d\n", position);
   if (position == FILTER_POS_LEFT)
     TEMP_FILTER_POSITION = position;
   else
@@ -424,36 +433,77 @@ int set_filter_value_pos(int position)
 
 int set_filter_op(char **op)
 {
-  printf("operation: %s", *op);
+  if (strcmp(*op, ">="))
+    TEMP_FILTER->typeOp = OP_MAIOR_IGUAL_QUE;
+  else if (strcmp(*op, "<="))
+    TEMP_FILTER->typeOp = OP_MENOR_IGUAL_QUE;
+  else
+    TEMP_FILTER->typeOp = **op;
 
   return 1;
 }
 
 int add_filter_condition(char **name, int type)
 {
-  printf("added filter: %s: ", *name);
-  
+  if (TEMP_FILTER_POSITION == FILTER_POS_LEFT) {
+    TEMP_FILTER->left = strdup(*name);
+    TEMP_FILTER->left_type = type;
+  } else {
+    TEMP_FILTER->right = strdup(*name);
+    TEMP_FILTER->left_type = type;
+  }
+
   switch (type) {
   case FILTER_VALUE:
-    printf("value\n");
-    break;
-    
-  case FILTER_COLUMN:
-    printf("column\n");
-    break;
-    
-  case FILTER_ALPHANUM:
-    printf("alphanum\n");
+    TEMP_FILTER->typeAtt = FILTER_TYPE_VALUE;
     break;
 
   case FILTER_NUMBER:
-    printf("number\n");
+    TEMP_FILTER->typeAtt = FILTER_TYPE_NUMBER;
+    break;
+    
+  case FILTER_ALPHANUM:
+    TEMP_FILTER->typeAtt = FILTER_TYPE_ALPHANUM;
     break;
 
-  default: printf("BUG!\n");
+  default: break;
   }
+  
+  return 1;
+}
+
+int add_filter_to_select()
+{
+  int filterIndex = 0;
+  qr_filter *aux;
+
+  // Sometimes this function will be called without needing,
+  // and is when no temp_filter exists;
+  if (TEMP_FILTER == NULL) return 0;
+  
+  filterIndex = GLOBAL_SELECT.nfilters++;
+  
+  aux = realloc(GLOBAL_SELECT.filters, sizeof(qr_filter) * GLOBAL_SELECT.nfilters);
+
+  if (aux == NULL) {
+    fprintf(stderr, "Cannot realloc filter conditions!\n");
+    GLOBAL_PARSER.noerror = 0;
+    
+    return 0;
+  }
+
+  GLOBAL_SELECT.filters = aux;
+  GLOBAL_SELECT.filters[filterIndex] = *TEMP_FILTER;
+  TEMP_FILTER = NULL;
+  TEMP_FILTER_POSITION = 0;
 
   return 1;
 }
 
-int add_filter_to_select();
+int set_filter_logic_op(char op)
+{
+  printf("LOGIC OP: %c", op);
+  TEMP_FILTER->typeLogico = op;
+  
+  return 1;
+}
