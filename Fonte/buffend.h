@@ -12,13 +12,21 @@
 #define LEN_DB_NAME 20
 #define DB_EXISTS 1
 #define DB_NOT_EXISTS 24
-#define OP_MENOR_IGAUL_QUE '@'
-#define OP_MAIOR_IGUAL_QUE '#'
-#define FILTER_COLUMN   20
-#define FILTER_VALUE    30 //Double
-#define FILTER_ALPHANUM 40
-#define FILTER_NUMBER   50
 
+// Operações
+#define OP_MENOR_IGUAL_QUE '@'
+#define OP_MAIOR_IGUAL_QUE '#'
+#define OP_LOGIC_AND 'A'
+#define OP_LOGIC_OR  'O'
+
+// Filter types
+#define FILTER_COLUMN   20 // Indica que o valor do filtro é uma coluna
+#define FILTER_VALUE    30 // Indica que o valor é um Double
+#define FILTER_ALPHANUM 40 // Indica que o valor é uma cadeia de caracteres 'ABC123'
+#define FILTER_NUMBER   50 // Indica que o valor é um inteiro
+#define FILTER_TYPE_VALUE    'D' // Indica com um caractere o valor do filtro, no caso, um Double
+#define FILTER_TYPE_NUMBER   'I' // ... Inteiro
+#define FILTER_TYPE_ALPHANUM 'C' // ... Cadeia de caracteres
 
 struct fs_objects { // Estrutura usada para carregar fs_objects.dat
     char nome[TAMANHO_NOME_TABELA];     //  Nome da tabela.
