@@ -418,10 +418,10 @@ int create_new_filter()
   TEMP_FILTER = (qr_filter *) malloc(sizeof(qr_filter));
   
   TEMP_FILTER->typeLogico = 'N';
-  free(TEMP_FILTER->left);
+  TEMP_FILTER->left = NULL;
   TEMP_FILTER->left_type = 'N';
   TEMP_FILTER->typeOp = '=';
-  free(TEMP_FILTER->right);
+  TEMP_FILTER->right = NULL;
   TEMP_FILTER->right_type = 'N';
 
   return 1;
