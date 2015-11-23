@@ -204,7 +204,7 @@ void doSelect(qr_select *st){
 			//Já posso chamar o selectWhere.c
 			valido = selectWhere(value);			
 			if(valido) //Se valido=1 posso imprimir. Caso valido=0 não posso.
-				printf("Valido tupla 1\n");
+				printf("Valido tupla n: %d",j);
 				//IMPRIMIIIRR ESSA TUUPLAAA HEUHA
 		}//If primeira tupla
 /*********************************
