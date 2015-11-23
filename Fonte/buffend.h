@@ -592,3 +592,4 @@ double doubAbs(double n);
 
 int selectWhere(list_value *value);
 
+void doSelect(qr_select *st);

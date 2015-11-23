@@ -275,7 +275,9 @@ int interface() {
                                 printf("WARNING: Nothing to be inserted. Command ignored.\n");
                             break;
                         case OP_SELECT_ALL:
-                            imprime(GLOBAL_DATA.objName);
+			  // imprime(GLOBAL_DATA.objName);
+			  // dump_select();
+			  doSelect(&GLOBAL_SELECT);
                             break;
                         case OP_CREATE_TABLE:
                             createTable(&GLOBAL_DATA);
@@ -374,8 +376,20 @@ void start_select()
 
 int set_select_table(char **table)
 {
+  int i = 0;
+
+  while((*table)[i] != '\0') { printf("nofound\n"); i++; }
   GLOBAL_SELECT.tables = strdup(*table);
+  i = 0;
+  while(GLOBAL_SELECT.tables[i] != '\0') { printf("asfound\n"); i++; }
+  
+  
+  GLOBAL_SELECT.tables = malloc(sizeof(char *) * (strlen(*table) + 1));
+  strcpy(GLOBAL_SELECT.tables, *table);
+  GLOBAL_SELECT.tables[strlen(*table)] = '\0';
   GLOBAL_SELECT.ntables++;
+
+  printf("tab %s", GLOBAL_SELECT.tables);
   
   return 1;
 }
@@ -502,8 +516,19 @@ int add_filter_to_select()
 
 int set_filter_logic_op(char op)
 {
-  printf("LOGIC OP: %c", op);
   TEMP_FILTER->typeLogico = op;
   
   return 1;
+}
+
+void dump_select()
+{
+  int i;
+  
+  printf("Projeção: ");
+
+  for (i = 0; i < GLOBAL_SELECT.nprojection; i++)
+    printf("%s, ", GLOBAL_SELECT.projection[i]);
+
+  printf("\n Tabela: %s", GLOBAL_SELECT.tables);
 }

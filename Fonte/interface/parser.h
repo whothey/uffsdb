@@ -18,15 +18,6 @@
 #define FILTER_POS_LEFT  0
 #define FILTER_POS_RIGHT 1
 
-// Filter types
-#define FILTER_COLUMN   20 // Indica que o valor do filtro é uma coluna
-#define FILTER_VALUE    30 // Indica que o valor é um Double
-#define FILTER_ALPHANUM 40 // Indica que o valor é uma cadeia de caracteres 'ABC123'
-#define FILTER_NUMBER   50 // Indica que o valor é um inteiro
-#define FILTER_TYPE_VALUE    'D' // Indica com um caractere o valor do filtro, no caso, um Double
-#define FILTER_TYPE_NUMBER   'I' // ... Inteiro
-#define FILTER_TYPE_ALPHANUM 'C' // ... Cadeia de caracteres
-
 /**
  * Select aux
  */
@@ -171,3 +162,8 @@ int set_filter_logic_op(char op);
  * Finish the current filter and add it to select struct
  */
 int add_filter_to_select();
+
+/**
+ * Dump select struct
+ */
+void dump_select();
