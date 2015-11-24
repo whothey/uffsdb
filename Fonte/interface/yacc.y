@@ -165,11 +165,11 @@ filter: {create_new_filter(); set_filter_value_pos(FILTER_POS_LEFT);} column_val
 
 logic_op: AND {set_filter_logic_op(OP_LOGIC_AND);} | OR {set_filter_logic_op(OP_LOGIC_OR);};
 
-column_value: VALUE  {add_filter_condition(yytext, FILTER_VALUE);}
+column_value: OBJECT {add_filter_condition(yytext, FILTER_COLUMN);} | filter_value;
+
+filter_value: ALPHANUM {add_filter_condition(yytext, FILTER_ALPHANUM);}
             | NUMBER {add_filter_condition(yytext, FILTER_NUMBER);}
-            | ALPHANUM {add_filter_condition(yytext, FILTER_ALPHANUM);}
-            | OBJECT {add_filter_condition(yytext, FILTER_COLUMN);}
-            ;
+            | VALUE {add_filter_condition(yytext, FILTER_VALUE);};
 
 where_cond: /* optional */ | WHERE filter logic_chain;
 

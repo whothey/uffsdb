@@ -20,10 +20,11 @@
 #define OP_LOGIC_OR  'O'
 
 // Filter types
-#define FILTER_COLUMN   20 // Indica que o valor do filtro é uma coluna
-#define FILTER_VALUE    30 // Indica que o valor é um Double
-#define FILTER_ALPHANUM 40 // Indica que o valor é uma cadeia de caracteres 'ABC123'
-#define FILTER_NUMBER   50 // Indica que o valor é um inteiro
+#define FILTER_COLUMN    'L' // Indica que o valor do filtro é uma coluna
+#define FILTER_NOTCOLUMN 'V' // Indica que o valor do filtro não é uma coluna
+#define FILTER_VALUE    'D' // Indica que o valor é um Double
+#define FILTER_ALPHANUM 'C' // Indica que o valor é uma cadeia de caracteres 'ABC123'
+#define FILTER_NUMBER   'I' // Indica que o valor é um inteiro
 #define FILTER_TYPE_VALUE    'D' // Indica com um caractere o valor do filtro, no caso, um Double
 #define FILTER_TYPE_NUMBER   'I' // ... Inteiro
 #define FILTER_TYPE_ALPHANUM 'C' // ... Cadeia de caracteres

@@ -154,7 +154,7 @@ int set_filter_op(char **op);
 /**
  * Add filter condition and inform it's type
  */
-int add_filter_condition(char **name, int type);
+int add_filter_condition(char **name, char type);
 
 int set_filter_logic_op(char op);
 

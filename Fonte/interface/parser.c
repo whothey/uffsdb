@@ -449,30 +449,30 @@ int set_filter_op(char **op)
   return 1;
 }
 
-int add_filter_condition(char **name, int type)
+int add_filter_condition(char **name, char type)
 {
-  if (TEMP_FILTER_POSITION == FILTER_POS_LEFT) {
+  if (TEMP_FILTER_POSITION == FILTER_POS_LEFT)
     TEMP_FILTER->left = strdup(*name);
-    TEMP_FILTER->left_type = type;
-  } else {
+  else
     TEMP_FILTER->right = strdup(*name);
-    TEMP_FILTER->left_type = type;
-  }
 
   switch (type) {
   case FILTER_VALUE:
-    TEMP_FILTER->typeAtt = FILTER_TYPE_VALUE;
-    break;
-
   case FILTER_NUMBER:
-    TEMP_FILTER->typeAtt = FILTER_TYPE_NUMBER;
-    break;
-    
   case FILTER_ALPHANUM:
-    TEMP_FILTER->typeAtt = FILTER_TYPE_ALPHANUM;
+    TEMP_FILTER->typeAtt = type;
+    
+    if (TEMP_FILTER_POSITION == FILTER_POS_LEFT)
+      TEMP_FILTER->left_type = FILTER_NOTCOLUMN;
+    else
+      TEMP_FILTER->right_type = FILTER_NOTCOLUMN;
     break;
 
-  default: break;
+  default:
+    if (TEMP_FILTER_POSITION == FILTER_POS_LEFT)
+      TEMP_FILTER->left_type = FILTER_COLUMN;
+    else
+      TEMP_FILTER->right_type = FILTER_COLUMN;
   }
   
   return 1;
@@ -537,5 +537,41 @@ void dump_select()
 
 void dump_where(qr_filter filter)
 {
+  printf("Operador Lógico: ");
+  
+  if (filter.typeLogico == 'A')
+    printf("AND\n");
+  else if (filter.typeLogico == 'O')
+    printf("OR\n");
+  else
+    printf("N/A\n");
+
+  printf("Operador da esquerda: %s ", filter.left);
+
+  switch (filter.left_type) {
+  case FILTER_NOTCOLUMN:
+    printf("(value [%c])\n", filter.left_type);
+    break;
+  case FILTER_COLUMN:
+    printf("(column [%c])\n", filter.left_type);
+    break;
+
+  default: printf("<erro> [%c]\n", filter.left_type);
+  }
+
+  printf("Operador da direita: %s ", filter.right);
+
+  switch (filter.right_type) {
+  case FILTER_NOTCOLUMN:
+    printf("(value [%c])\n", filter.right_type);
+    break;
+
+  case FILTER_COLUMN:
+    printf("(column [%c])\n", filter.right_type);
+    break;
+
+  default: printf("<erro> [%c]\n", filter.right_type);
+  }
+  
   return;
 }
