@@ -99,14 +99,14 @@ int selectWhere(list_value *value){
 	int b;
 
 	//Vai parar quando não tiver mais AND ou OR. TypeLogic=N (N de NULL )
-	if(value == NULL){
+	if(value->typeLogic == 'N'){
 
 		if(value->typeValue == 'D')//Caso double, manda o dvalue.
 			return doOperation((double*)&value->dvalue[0], (double*)&value->dvalue[1], value->typeOp, value->typeValue);
 
 		if(value->typeValue == 'I')//Assim para INT
-			return doOperation((int*)&value->ivalue[0], (double*)&value->ivalue[1], value->typeOp, value->typeValue);
-
+			return doOperation((int*)&value->ivalue[0], (int*)&value->ivalue[1], value->typeOp, value->typeValue);
+		
 		if(value->typeValue == 'C')//E *char
 			return doOperation((char*)&value->sname[0], (char*)&value->sname[1], value->typeOp, value->typeValue);
 
@@ -123,7 +123,7 @@ int selectWhere(list_value *value){
                 return doOperation((double*)&value->dvalue[0], (double*)&value->dvalue[1], value->typeOp, value->typeValue); ;
 
 			if(value->typeValue == 'I')
-				return doOperation((int*)&value->ivalue[0], (double*)&value->ivalue[1], value->typeOp, value->typeValue);
+				return doOperation((int*)&value->ivalue[0], (int*)&value->ivalue[1], value->typeOp, value->typeValue);
 
 			if(value->typeValue == 'C')
 				return doOperation((char*)&value->sname[0], (char*)&value->sname[1], value->typeOp, value->typeValue);
@@ -140,7 +140,7 @@ int selectWhere(list_value *value){
 				return doOperation((double*)&value->dvalue[0], (double*)&value->dvalue[1], value->typeOp, value->typeValue);
 
 			if(value->typeValue == 'I')
-				return doOperation((int*)&value->ivalue[0], (double*)&value->ivalue[1], value->typeOp, value->typeValue);
+				return doOperation((int*)&value->ivalue[0], (int*)&value->ivalue[1], value->typeOp, value->typeValue);
 
 			if(value->typeValue == 'C')
 				return doOperation((char*)&value->sname[0], (char*)&value->sname[1], value->typeOp, value->typeValue);
