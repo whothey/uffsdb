@@ -16,6 +16,7 @@
 // Operações
 #define OP_MENOR_IGUAL_QUE '@'
 #define OP_MAIOR_IGUAL_QUE '#'
+#define OP_DIFERENTE '!'
 #define OP_LOGIC_AND 'A'
 #define OP_LOGIC_OR  'O'
 

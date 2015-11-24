@@ -443,6 +443,8 @@ int set_filter_op(char **op)
     TEMP_FILTER->typeOp = OP_MAIOR_IGUAL_QUE;
   else if (strcmp(*op, "<=") == 0)
     TEMP_FILTER->typeOp = OP_MENOR_IGUAL_QUE;
+  else if (strcmp(*op, "<>") == 0)
+    TEMP_FILTER->typeOp = OP_DIFERENTE;
   else
     TEMP_FILTER->typeOp = **op;
 
@@ -557,6 +559,24 @@ void dump_where(qr_filter filter)
     break;
 
   default: printf("<erro> [%c]\n", filter.left_type);
+  }
+
+  printf("Operador: ");
+
+  switch(filter.typeOp) {
+  case OP_MAIOR_IGUAL_QUE:
+    printf(">=\n");
+    break;
+    
+  case OP_MENOR_IGUAL_QUE:
+    printf("<=\n");
+    break;
+
+  case OP_DIFERENTE:
+    printf("<>\n");
+    break;
+
+  default: printf("%c\n", filter.typeOp);
   }
 
   printf("Operador da direita: %s ", filter.right);
