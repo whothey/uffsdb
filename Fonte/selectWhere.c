@@ -1,18 +1,12 @@
 //BufferPool
 #include "buffend.h"
 
-/*
-@  <=
-#  >=
-<  <
->  >
-=  ==
-!  !=
-*/
 int doOperation(const void * v1, const void * v2, char op, char type){ //Retorna 1 caso Verdadeiro
 
     if(type == 'C'){
-        int num = strcmp(v1, v2);
+		const char *a = *(const char **)v1;
+		const char *b = *(const char **)v2;
+        int num = strcmp(a, b);
         if(op == '='){
             if(num == 0)
                 return 1;
@@ -112,7 +106,6 @@ int selectWhere(list_value *value){
 
 	}
 	//Devo fazer cast.. (double *)&value->dvalue[0] .. Porque a próxima função eh constant * void.
-	printf("chegou no where :D\n");
 	b = selectWhere(value->next);
 
 	if(value->typeLogic == 'A'){ //Se for AND.
