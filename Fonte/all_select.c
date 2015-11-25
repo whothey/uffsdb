@@ -1,10 +1,10 @@
 #include "buffend.h"
 
 void doSelect(qr_select *st){
-	printf("ola");
-	int j=0,erro,x,p,position=0,flag=1,primeiraTupla=1,valido=-10,m,aux=j;
+
+	int j=0,erro,x,p,position=0,flag=1,primeiraTupla=1,valido=-10,m=0,aux=j,n=0,count=0;
 	//ntuplas está ali pra saber quantas tuplas foram impressas.
-	int *poAtt,n; //,*auxPoAtt;
+	int *poAtt; //,*auxPoAtt;
 	double *auxd = (double *)malloc(sizeof(double));
 	int *auxi = (int *)malloc(sizeof(int));
 
@@ -33,8 +33,10 @@ void doSelect(qr_select *st){
         return;
     }
 	//'Vetor' que vai guardar todos os acessos a pagina. Para pegar os atributos de maneira direta
-	poAtt = (int *)malloc(sizeof(int)*objeto.qtdCampos); //No máximo terá o tamanho igual a quantidade de campos.
+	poAtt = (int *)malloc(sizeof(int) * objeto.qtdCampos); //No máximo terá o tamanho igual a quantidade de campos.
+	//int *help = poAtt;
 	//auxPoAtt = (int *)malloc(sizeof(int)*objeto.qtdCampos);
+	//int poAtt[objeto.qtdCampos];
 
 	//Coloca todas as tuplas daquela tabela no buffer
 	erro = SUCCESS;
@@ -49,7 +51,7 @@ void doSelect(qr_select *st){
 	while(x){
 		//Lê uma página p do buffer e salva na variavel *pagina
 		//j=0;
-		printf("ola!");
+
 		column *pagina = getPage(bufferpoll, esquema, objeto, p);
 	    if(pagina == ERRO_PARAMETRO){
             printf("ERROR: could not open the table.\n");
@@ -57,9 +59,8 @@ void doSelect(qr_select *st){
             free(esquema);
             return;
 	    }
-		printf("ola!2");
+		
 		if(primeiraTupla){
-
 		//Quando for a 1° tupla, vou varrer todo o objeto, encontrar as posições certinhas, salvar no *poAtt. E na próxima página acessar tudo tipo ninja
 			for(j=0; st->nfilters > position; j++){
 				//Verificar se já achou o atributo da esquerda, caso full=1 eh porque já achou.
@@ -68,7 +69,9 @@ void doSelect(qr_select *st){
 				if(full == 0){
 					//Se lado esquero não for um atributo, mas sim um valor
 					if(st->filters[position].left_type == 'V'){
-						*(poAtt+n) = -1; //Quando for -1 eh porque o valor vem direto do filters.left
+						*(poAtt + n) = -1; //Quando for -1 eh porque o valor vem direto do filters.left
+						//*(poAtt++) = -1;
+						//poAtt[n]=-1;
 						//*(auxPoAtt+n) = -1;
 						n++;
 						//count++;
@@ -93,15 +96,17 @@ void doSelect(qr_select *st){
 					else if(strcmp(pagina[j].nomeCampo, st->filters[position].left) == 0){
 						//N eh pra controlar o 'vetor' poAtt
 						//Cara, essa linha tá sinistra, preciso te explicar falando. Espero que funcione heuha
-					//	*(poAtt+n) = j+objeto.qtdCampos;
+						*(poAtt+n) = j+objeto.qtdCampos;
+						//*(poAtt++) = j+objeto.qtdCampos;
 						//*(auxPoAtt+n) = j+objeto.qtdCampos;							
+						//poAtt[n] = j+objeto.qtdCampos;
 						n++;
 						//count++;
 						full=1;
 						//Agora salvar na lista Value.
 						if(pagina[j].tipoCampo == 'S' || pagina[j].tipoCampo == 'C'){
 							strcpy(tmp->sname[0], pagina[j].valorCampo);
-							printf("Value1: %s\n",tmp->sname[0]);
+							//printf("Value1: %s\n",tmp->sname[0]);
 							tmp->typeValue = 'C';
 						}
 
@@ -125,8 +130,11 @@ void doSelect(qr_select *st){
 					flag=0;
 					//Se o lado direito não for um atributo, mas sim um valor
 					if(st->filters[position].right_type == 'V'){
-						*(poAtt+n) = -2; //Quando for -2 eh porque o valor vem direto do filters.right
+						*(poAtt + n) = -2; //Quando for -2 eh porque o valor vem direto do filters.right
+						//*(poAtt++) = -2;
 						//*(auxPoAtt+n) = -2;
+						//poAtt[n] = -2;
+						//printf("nValue: %d\n",n);
 						n++;
 						//count++;
 						full = 2;
@@ -143,7 +151,7 @@ void doSelect(qr_select *st){
 
 						else if(st->filters[position].typeAtt == 'I'){
 							tmp->ivalue[1] = atoi(st->filters[position].right);
-							printf("Valor2 Int: %d\n",tmp->ivalue[1]);
+							//printf("Valor2 Int: %d\n",tmp->ivalue[1]);
 							tmp->typeValue = 'I';
 						}
 					}
@@ -151,7 +159,9 @@ void doSelect(qr_select *st){
 						//Cara, essa linha tá sinistra, preciso te explicar falando. Espero que funcione heuha
 //						printf("\nAQUI\n");
 						*(poAtt+n) = j+objeto.qtdCampos;
+						//*(poAtt++) = j+objeto.qtdCampos;
 						//*(auxPoAtt+n) = j+objeto.qtdCampos;
+						poAtt[n] = j+objeto.qtdCampos;
 						n++;
 						//count++;
 						full=2;
@@ -200,12 +210,15 @@ void doSelect(qr_select *st){
 			//Acabei de ler o primeiro registro.. primeira tupla
 			primeiraTupla=0;
 			//Já posso chamar o selectWhere.c
-			printf("\nlogic: %c\nivalue1: %d\nivalue2: %d\nOp: %c\n", value->typeLogic, value->ivalue[0],value->ivalue[1], value->typeOp);
+			//printf("\nlogic: %c\nivalue1: %d\nivalue2: %d\nOp: %c\n", value->typeLogic, value->ivalue[0],value->ivalue[1], value->typeOp);
 			valido = selectWhere(value);
-			printf("valido1: %d\n",valido);
-//			if(valido) //Se valido=1 posso imprimir. Caso valido=0 não posso.
-	//			printf("Valido tupla n: %d",j);
+			printf("Valido1: %d\n",valido);
+			count++;
+			//printf("valido1: %d\n",valido);
+			//if(valido) //Se valido=1 posso imprimir. Caso valido=0 não posso.
+				//printf("Valido1 tupla n: %d\n",aux);
 				//IMPRIMIIIRR ESSA TUUPLAAA HEUHA
+		//poAtt = help;
 		}//If primeira tupla
 /*********************************
 Até aqui fiz apenas pro primeiro registro. E claro, salvei a posição dos atributos para serem lidos no 'vetor' poAtt(tem que testar).
@@ -218,20 +231,28 @@ Agora eh só pegar o resto dos registros, acessá-los diretamente. Salvar no *va
 			tmp = value;
 			tmp->next = value->next;
 			for(position=0; *(poAtt+m) < objeto.qtdCampos * bufferpoll[p].nrec; j++){
+			//for(position=0; poAtt[m] < objeto.qtdCampos * bufferpoll[p].nrec; j++){
 				if(st->filters[position].typeAtt == 'C'){
 					if(*(poAtt+m) == -1)
+					//if(poAtt[m] == -1)
 						strcpy(tmp->sname[0], st->filters[position].left);
 					else{
 						strcpy(tmp->sname[0], pagina[*(poAtt+m)].valorCampo);
 						*(poAtt+m) += objeto.qtdCampos;
+						//strcpy(tmp->sname[0], pagina[poAtt[m]].valorCampo);
+						//poAtt[m] += objeto.qtdCampos;
 					}
 					full = 1;
 					if(*(poAtt+m+1) < objeto.qtdCampos * bufferpoll[p].nrec){
+					//if(poAtt[m+1] < (objeto.qtdCampos * bufferpoll[p].nrec)){
 						if(*(poAtt+m+1) == -2)
+						//if(poAtt[m+1] == -2)
 							strcpy(tmp->sname[1], st->filters[position].right);
 						else{
 							strcpy(tmp->sname[1], pagina[*(poAtt+m+1)].valorCampo);
 							*(poAtt+m+1) += objeto.qtdCampos;
+							//strcpy(tmp->sname[1], pagina[poAtt[m+1]].valorCampo);
+							//poAtt[m+1] += objeto.qtdCampos;
 						}
 						full=2;
 					}
@@ -239,20 +260,29 @@ Agora eh só pegar o resto dos registros, acessá-los diretamente. Salvar no *va
 
 				else if(st->filters[position].typeAtt == 'D'){
 					if(*(poAtt+m) == -1)
+					//if(poAtt[m] == -1)
 						tmp->dvalue[0] = atof(st->filters[position].left);
 					else{
 						auxd = (double *)&pagina[*(poAtt+m)].valorCampo[0];
 						tmp->dvalue[0] = *auxd;
 						*(poAtt+m) += objeto.qtdCampos;
+					//	auxd = (double *)&pagina[poAtt[m]].valorCampo[0];
+					//	tmp->dvalue[0] = *auxd;
+					//	poAtt[m] += objeto.qtdCampos;
 					}
 					full = 1;
 					if(*(poAtt+m+1) < objeto.qtdCampos * bufferpoll[p].nrec){
+					//if(poAtt[m+1] < (objeto.qtdCampos * bufferpoll[p].nrec)){
 						if(*(poAtt+m+1) == -2)
+						//if(poAtt[m+1] == -2)
 							tmp->dvalue[1] = atof(st->filters[position].right);
 						else{
 							auxd = (double *)&pagina[*(poAtt+m+1)].valorCampo[0];
 							tmp->dvalue[1] = *auxd;
 							*(poAtt+m+1) += objeto.qtdCampos;
+							//auxd = (double *)&pagina[poAtt[m+1]].valorCampo[0];
+							//tmp->dvalue[1] = *auxd;
+							//poAtt[m+1] += objeto.qtdCampos;
 						}
 						full=2;
 					}
@@ -260,24 +290,37 @@ Agora eh só pegar o resto dos registros, acessá-los diretamente. Salvar no *va
 
 				else if(st->filters[position].typeAtt == 'I'){
 					if(*(poAtt+m) == -1)
+					//if(poAtt[m] == -1)
 						tmp->ivalue[0] = atoi(st->filters[position].left);
 					else{
 						auxi = (int *)&pagina[*(poAtt+m)].valorCampo[0]; //Aqui deu pau.. preciso ler outra página.
 						tmp->ivalue[0] = *auxi;
 						*(poAtt+m) += objeto.qtdCampos;
+						//auxi = (int *)&pagina[poAtt[m]].valorCampo[0]; //Aqui deu pau.. preciso ler outra página.
+						//tmp->ivalue[0] = *auxi;
+						//poAtt[m] += objeto.qtdCampos;
 					}
 					full = 1;
-					if(*(poAtt+m+1) < objeto.qtdCampos * bufferpoll[p].nrec){
+					//printf("hear\n");
+					//if(*(poAtt+m+1) < objeto.qtdCampos * bufferpoll[p].nrec){
+						//printf("hearINSIDE\n");
+					//if(poAtt[m+1] < (objeto.qtdCampos*bufferpoll[p].nrec)){
 						if(*(poAtt+m+1) == -2){
+						//printf("Mvalue: %d < %d\n",poAtt[m+1],objeto.qtdCampos * bufferpoll[p].nrec);	
+						//if(poAtt[m+1] == -2){
 							tmp->ivalue[1] = atoi(st->filters[position].right);
+							//printf("Value: %d\n",tmp->ivalue[1]);
 						}
 						else{
 							auxi = (int *)&pagina[*(poAtt+m+1)].valorCampo[0];
 							tmp->ivalue[1] = *auxi;
 							*(poAtt+m+1) += objeto.qtdCampos;	
+							//auxi = (int *)&pagina[poAtt[m+1]].valorCampo[0];
+							//tmp->ivalue[1] = *auxi;
+							//poAtt[m+1] += objeto.qtdCampos;
 						}
 						full=2;
-					}
+					//}
 				}
 				if(full == 2){ //Encheu a lista, setar para a  nova
 					tmp->typeLogic = st->filters[position].typeLogico;
@@ -287,14 +330,16 @@ Agora eh só pegar o resto dos registros, acessá-los diretamente. Salvar no *va
 					m += 2;
 					full=0;
 					tmp = tmp->next; //proxima lista
+					//printf("MValue: %d\n",m);
 					if(m == n){//Se verdadeiro, terminou um registro
-						printf("\n2\nlogic: %c\nivalue1: %d\nivalue2: %d\nOp: %c\n", value->typeLogic, value->ivalue[0],value->ivalue[1], value->typeOp);
-						m=0;
+						//printf("\n2\nlogic: %c\nivalue1: %d\nivalue2: %d\nOp: %c\n", value->typeLogic, value->ivalue[0],value->ivalue[1], value->typeOp);
 						valido = selectWhere(value);
-						printf("valido: %d\n",valido);
-						if(valido)
-							printf("Valido tupla n: %d",j);
+						printf("valido2: %d\n",valido);
+						count++;
+						//if(valido)
+							//printf("Valido2 tupla n: %d\n",*(poAtt+m));
 							//Imprimiiiirrr
+						m=0;
 						tmp = value;
 						tmp->next = value->next;
 						position=0;		
@@ -306,13 +351,14 @@ Agora eh só pegar o resto dos registros, acessá-los diretamente. Salvar no *va
 			}//FOR
 			primeiraTupla=1;
 		}//Else
-	printf("aqui12");
+	n=0;
+	//printf("aqui12");
 	x -= bufferpoll[p++].nrec;
 
 
 
 	}//While(x)
-	printf("Terminou kk\nCom tantas linhas %d\n",ntuplas);
+	printf("Terminou kk\nCom tantas linhas %d\ne Tuplas: %d\n",count, ntuplas);
 
 }//Fim função.
 
