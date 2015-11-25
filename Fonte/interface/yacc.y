@@ -150,35 +150,40 @@ create_database: CREATE DATABASE {setMode(OP_CREATE_DATABASE);} OBJECT {setObjNa
 /* DROP DATABASE */
 drop_database: DROP DATABASE {setMode(OP_DROP_DATABASE);} OBJECT {setObjName(yytext);} semicolon {return 0;};
 
-/***      ***
- ** SELECT **
- ***      ***/
 
-// SELECT COLUMNS
+/*******************************************
+ ** INTERPRETAÇÃO DO SELECT               **
+ *******************************************/
+
+// Sintaxe do SELECT
+select: SELECT {setMode(OP_SELECT_ALL); start_select();} column_list_projection FROM table_select where_cond semicolon {return 0;};
+
+// Definindo Projeções
 column_list_projection: {add_column_to_projection(yytext);} '*' | column_projection | column_projection ',' column_list_projection;
 column_projection: OBJECT {add_column_to_projection(yytext);};
 
-// Filters
+// Filtros (WHERE's)
+where_cond: /* define que o WHERE é opcional */ | WHERE filter logic_chain;
+
+logic_chain: /* define que uma cadeia de AND ou OR é opcional, mas adiciona o filtro anterior */ {add_filter_to_select();}
+           | logic_op {add_filter_to_select();} filter logic_chain
+	   ;
+
+// Definindo aqui a sintaxe VALOR OPERAÇÃO VALOR
 filter: {create_new_filter(); set_filter_value_pos(FILTER_POS_LEFT);} column_value COMP_OP {set_filter_op(yytext); set_filter_value_pos(FILTER_POS_RIGHT);} column_value;
 
-// {set_filter_op(yytext); set_filter_value_pos(FILTER_POS_RIGHT);}
-
+// Definindo função ao interpretar um AND ou OR
 logic_op: AND {set_filter_logic_op(OP_LOGIC_AND);} | OR {set_filter_logic_op(OP_LOGIC_OR);};
 
+// Identifica uma coluna ou valor especifico
 column_value: OBJECT {add_filter_condition(yytext, FILTER_COLUMN);} | filter_value;
 
+// Identifica valores (alfanumericos, etc..)
 filter_value: ALPHANUM {add_filter_condition(yytext, FILTER_ALPHANUM);}
             | NUMBER {add_filter_condition(yytext, FILTER_NUMBER);}
             | VALUE {add_filter_condition(yytext, FILTER_VALUE);};
 
-where_cond: /* optional */ | WHERE filter logic_chain;
-
-logic_chain: /* optional */ {add_filter_to_select();} | logic_op {add_filter_to_select();} filter logic_chain;
-
-// Main select
-select: SELECT {setMode(OP_SELECT_ALL); start_select();} column_list_projection FROM table_select where_cond semicolon {return 0;};
-
-/* SELECT */
+/* Antigo SELECT */
 /*select: SELECT {setMode(OP_SELECT);} column_list_select FROM table_select semicolon {return 0;};*/
 
 table_select: OBJECT {setObjName(yytext); set_select_table(yytext);};

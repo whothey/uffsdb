@@ -118,54 +118,108 @@ void clearGlobalStructs();
 void setMode(char mode);
 
 
-/*********************************************************
+/***********************************************************************
  * SELECT
- *********************************************************/
+ *
+ * Funções para auxilio da implementação do Select, como o YaCC
+ * funciona de token em token (ou pelo menos assim que foi tratado),
+ * precisamos de estruturas e variaveis auxiliares, geralmente
+ * globais, para manter as informações.  
+ *
+ * Neste caso as estruturas e variaveis utilizadas são:
+ *
+ * A estrutura GLOBAL_SELECT, que contém os dados gerais do Select
+ * (tais como projeção, quantidade de wheres, estruturas dos wheres,
+ * etc...)  e é utilizada pela função de interpretação "doSelect";
+ *
+ * A estrutura TEMP_FILTER, que representa o filtro que esta sendo
+ * construído naquele momento, para futura agregação na estrutura do
+ * SELECT;
+ * 
+ * A variavel TEMP_FILTER_POSITION, que representa a posição do
+ * próximo parâmetro, que futuramente deverá ser analisada, já que é
+ * possivel comparar as posições já atribuídas para um filtro através
+ * do próprio atributo.
+ **********************************************************************/
+
 /** 
- * Restarts the global select state
+ * Inicia o estado geral da estrutura GLOBAL_SELECT
  */
 void start_select();
 
 /** 
- * Add an column to select struct
+ * Adiciona uma coluna á projeção do GLOBAL_SELECT, geralmente o valor
+ * de resposta do YaCC (yytext).
  */
 int add_column_to_projection(char **column);
 
 /**
- * Add to SELECT struct the table to select
+ * Vincula uma tabela ao select
+ *
+ * ATENÇÃO: apesar de em alguns SGDBs é possível produzir um produto
+ * cartesiano através de "SELECT * FROM table1, table2;", no momento
+ * de desenvolvimento desta função, por mais que a variavel da
+ * estrutura qr_select esteja no plural, esta funciona só adiciona 1
+ * (UMA) tabela ao select que está sendo construído.
  */
 int set_select_table(char** table);
 
 /**
- * Creates a new filter in Global auxiliar struct
+ * Cria um novo filtro (alocação e instanciação básica) na variavel
+ * auxiliar da estrutura qr_filter (TEMP_FILTER).  Por segurança, o
+ * conteúdo anterior da variavel é liberado (free), mas lembrando que
+ * este valor deve ser NULL devido á inserção do filtro anteriormente
+ * alocado nesta variável na estrutura GLOBAL_SELECT.
  */
 int create_new_filter();
 
 /**
- * Set next filter value position in 'filter struct' (qr_filter)
+ * Seleciona a posição do próximo operador na estrutura temporária de
+ * filtro (qr_filter).
+ *
+ * Como já foi comentado (no inicio das descrições sobre as funções de
+ * interpretação do select), uma medida temporária e passível de
+ * remoção.
  */
 int set_filter_value_pos(int position);
 
 /**
- * Set the next filter operation
+ * Atribui á estrutura de filtro temporária (TEMP_FILTER) a operação
+ * presente no parâmetro.
  */
 int set_filter_op(char **op);
 
 /**
- * Add filter condition and inform it's type
+ * Adiciona um operando no TEMP_FILTER, também se descreve o tipo
+ * desse operando;
+ *
+ * É adicionado na posição definida pela variavel global
+ * TEMP_FILTER_POSITION.
  */
 int add_filter_condition(char **name, char type);
 
+/**
+ * Atribui á estrutura do select a operação lógica (AND ou OR)         --- "ou OR" rsrsrssrsrsrsrsrsrrrsrs
+ */
 int set_filter_logic_op(char op);
 
 /**
- * Finish the current filter and add it to select struct
+ * Finaliza o filtro atual, remove-o e atribui NULL para a variável
+ * temporária, e adiciona-o na lista de estruturas de filtro do
+ * SELECT.
  */
 int add_filter_to_select();
 
+/*************************************************************
+ ** Funções auxiliares para debug das estruturas globais
+ *************************************************************/
+
 /**
- * Dump select struct
+ * Informa os dados da estrutura SELECT
  */
 void dump_select();
 
+/**
+ * Informa os dados da estrutura qr_filter referenciada.
+ */
 void dump_where(qr_filter filter);
