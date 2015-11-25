@@ -210,6 +210,12 @@ int set_filter_logic_op(char op);
  */
 int add_filter_to_select();
 
+/**
+ * Limpa as aspas de uma string (de um valor alfanumerico definido no
+ * select)
+ */
+char *clean_qmarks(char *name);
+
 /*************************************************************
  ** Funções auxiliares para debug das estruturas globais
  *************************************************************/

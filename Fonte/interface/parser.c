@@ -454,9 +454,9 @@ int set_filter_op(char **op)
 int add_filter_condition(char **name, char type)
 {
   if (TEMP_FILTER_POSITION == FILTER_POS_LEFT)
-    TEMP_FILTER->left = strdup(*name);
+    TEMP_FILTER->left = clean_qmarks(*name);
   else
-    TEMP_FILTER->right = strdup(*name);
+    TEMP_FILTER->right = clean_qmarks(*name);
 
   switch (type) {
   case FILTER_VALUE:
@@ -513,6 +513,26 @@ int set_filter_logic_op(char op)
   TEMP_FILTER->typeLogico = op;
   
   return 1;
+}
+
+char *clean_qmarks(char *name)
+{
+  int i;
+  char *result = (char *) malloc(strlen(name) * sizeof(char));
+
+  if (name[0] == '\'' && name[strlen(name) - 1] == '\'') {
+    for (i = 1; i < strlen(name)-1; i++) {
+      result[i-1] = name[i];
+    }
+    
+    result[strlen(name) - 2] = '\0';
+  } else {
+    free(result);
+    
+    return strdup(name);
+  }
+  
+  return result;
 }
 
 void dump_select()
