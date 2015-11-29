@@ -30,7 +30,7 @@ void printCabecalho(column *p, char **name, int nprojection){
 
 void printSaveTupla(int j, column *p, char **name, int nprojection, int registros){
 	int i;
-	
+	printf("Aqui");
 	for(i = 0; i < nprojection; j++){
 		
 		if(j < registros){
@@ -97,7 +97,6 @@ void printTupla(int j, column *p, char **name, int nprojection, int registros){
 		}
 
 	}
-
 	printf("\n");
 }
 
@@ -105,7 +104,7 @@ void printTupla(int j, column *p, char **name, int nprojection, int registros){
 
 void doSelect(qr_select *st){
 
-	int j=0,erro,x,p,position=0,flag=1,primeiraTupla=1,valido=-10,m=0,n=0,count=0,registros,i,nvalidas=0,save=0;
+	int j=0,erro,x,p,position=0,flag=1,primeiraTupla=1,valido=-10,m=0,n=0,count=0,registros,i,nvalidas=0,save=0,aux=0;
 //aux=j
 	int *poAtt;
 	double *auxd = (double *)malloc(sizeof(double));
@@ -147,6 +146,8 @@ void doSelect(qr_select *st){
 
 	list_value *tmp = value;
 	tmp->next = value->next;
+	tmp->sname[0] = (char *)malloc(esquema->tam * 10);
+	tmp->sname[1] = (char *)malloc(esquema->tam * 10);
 	int ntuplas=--x,full=0;
 	//int full=0;
 	p = 0 * ntuplas;
@@ -170,16 +171,6 @@ void doSelect(qr_select *st){
 	    }
 		count=0;
 
-	/*	for(i=0; i < st->nprojection; i++){
-			if(strcmp(st->projection[i], pagina[j].nomeCampo) == 0){
-				*(poProj + i) = j;
-				*(positions + i) = j;
-				i++;
-			}
-			j++;
-		}
-		Salvando as posições para impressão.. não eh necessario*/
-
 		registros = objeto.qtdCampos * bufferpoll[p].nrec;
 		
 		if(primeiraTupla){
@@ -195,8 +186,8 @@ void doSelect(qr_select *st){
 						full=1;
 						//Caso o tipo seja Char
 						if(st->filters[position].typeAtt == 'C'){
-							if(valido == -10)
-								tmp->sname[0] = (char *)malloc(sizeof(char)*esquema->tam + sizeof(char)*2);//Alocando de acordo com o tamanho do campo +1
+							//if(valido == -10)
+								//tmp->sname[0] = (char *)malloc(sizeof(char)*esquema->tam + sizeof(char)*2);//Alocando de acordo com o tamanho do campo +1
 							strcpy(tmp->sname[0], st->filters[position].left); //Copio direito do filtro
 							tmp->typeValue = 'C'; 
 						}
@@ -220,12 +211,12 @@ void doSelect(qr_select *st){
 						full=1;//Sempre que for full=1 é porque encontrei o valor da esquerda daquela página
 						//Agora salvar na lista Value.
 						if(pagina[j].tipoCampo == 'S' || pagina[j].tipoCampo == 'C'){
-							if(valido == -10){
+							/*if(valido == -10){
 								tmp->sname[0] = (char *)malloc(sizeof(char)*strlen(pagina[j].valorCampo) * 2);
-							}
+							}*/
 							//printf("NomeCampo: %s\n" , pagina[j].nomeCampo);
 							strcpy(tmp->sname[0],pagina[j].valorCampo);
-							//printf("Nome1: %s\n", tmp->sname[0]);
+							//printf("Nome: %s\n", tmp->sname[0]);
 							tmp->typeValue = 'C';
 							//printf("valor: %d\n", *(poAtt+n-1));
 						}
@@ -257,10 +248,10 @@ void doSelect(qr_select *st){
 						full = 2;
 						flag=1;
 						if(st->filters[position].typeAtt == 'C'){
-							if(valido == -10){
+						/*	if(valido == -10){
 								tmp->sname[1] = (char *)malloc(sizeof(char)*strlen(pagina[j].valorCampo) * 2);
 							//	printf("Aloquei 2\n");
-							}
+							}*/
 							//printf("Nome2: %s\n", st->filters[position].right);
 							st->filters[position].right[strlen(st->filters[position].right)] = '\0';
 							strcpy(tmp->sname[1], st->filters[position].right);
@@ -286,9 +277,9 @@ void doSelect(qr_select *st){
 						flag=1;
 						//Agora salvar na lista Value.
 						if(pagina[j].tipoCampo == 'S' || pagina[j].tipoCampo == 'C'){
-							if(valido == -10)
-								tmp->sname[1] = (char *)malloc(sizeof(char)*esquema->tam + sizeof(char)*2);
-							pagina[j].valorCampo[strlen(pagina[j].valorCampo)] = '\0';
+							//if(valido == -10)
+								//tmp->sname[1] = (char *)malloc(sizeof(char)*esquema->tam + sizeof(char)*2);
+							//pagina[j].valorCampo[strlen(pagina[j].valorCampo)] = '\0';
 							strcpy(tmp->sname[1], pagina[j].valorCampo);
 							tmp->typeValue = 'C';
 						}
@@ -308,6 +299,7 @@ void doSelect(qr_select *st){
 				}
 				//Se verdadeiro. Preciso fazer tudo de novo hehe
 				if(full > 0 && flag == 1){
+					aux = j;
 					j=-1;
 					//Quero que apenas quando full=2
 					if(full == 2){//Quando full=2, é sinal que preciso criar novo value, e setar o próximo filtro. Pois tudo já foi preenchido
@@ -315,8 +307,11 @@ void doSelect(qr_select *st){
 						tmp->typeOp = st->filters[position].typeOp;
 						full = 0;
 						tmp = tmp->next;
-						if(valido == -10)//Só vai acontecer no 1° registro, para alocar a quantia exata de values
+						if(valido == -10){//Só vai acontecer no 1° registro, para alocar a quantia exata de values
 							tmp->next =  (list_value *) malloc(sizeof(list_value)); //próxima lista de values
+							tmp->sname[0] = (char *)malloc(esquema->tam * 10);
+							tmp->sname[1] = (char *)malloc(esquema->tam * 10);
+						}
 						position++; //Próximo filtro
 					}
 				}
@@ -356,6 +351,7 @@ Agora eh só pegar o resto dos registros, acessá-los diretamente. Salvar no *va
 							strcpy(tmp->sname[0], st->filters[position].left);
 						else{//Se não, ele vem da página
 							strcpy(tmp->sname[0], pagina[*(poAtt+m)].valorCampo);
+							//printf("Nome: %s\n", tmp->sname[0]);
 							//printf("Valo2: %d\n",*(poAtt+m));					
 							*(poAtt+m) += objeto.qtdCampos;	
 						}
@@ -427,11 +423,6 @@ Agora eh só pegar o resto dos registros, acessá-los diretamente. Salvar no *va
 					else
 						save=1;
 				}
-				if(position == 0){
-					if(*(poAtt+m) == -1)
-						j = *(poAtt+m+1) - objeto.qtdCampos;
-					j = *(poAtt+m) - objeto.qtdCampos;
-				}
 
 				if(full == 2){ //Encheu a lista, setar para a  nova
 					tmp->typeLogic = st->filters[position].typeLogico;
@@ -444,6 +435,7 @@ Agora eh só pegar o resto dos registros, acessá-los diretamente. Salvar no *va
 					
 					tmp = tmp->next; //proxima lista
 					if(m == n){//Se verdadeiro, terminou um registro
+						aux += objeto.qtdCampos;
 						valido = selectWhere(value);
 						//printf("valido2: %d\n",valido);
 						count++;
@@ -451,7 +443,7 @@ Agora eh só pegar o resto dos registros, acessá-los diretamente. Salvar no *va
 							nvalidas++;
 							if(nvalidas == 1)
 								printCabecalho(pagina, st->projection, st->nprojection);
-							printTupla(j, pagina, st->projection, st->nprojection, registros);
+							printTupla(aux, pagina, st->projection, st->nprojection, registros);
 							//printf("save: %d\n", save);
 						}
 						m=0;
