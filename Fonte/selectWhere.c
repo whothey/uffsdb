@@ -102,7 +102,7 @@ int selectWhere(list_value *value){
 			return doOperation((int*)&value->ivalue[0], (int*)&value->ivalue[1], value->typeOp, value->typeValue);
 		
 		if(value->typeValue == 'C')//E *char
-			return doOperation((char*)&value->sname[0], (char*)&value->sname[1], value->typeOp, value->typeValue);
+			return doOperation((char *)&value->sname[0], (char *)&value->sname[1], value->typeOp, value->typeValue);
 
 	}
 	//Devo fazer cast.. (double *)&value->dvalue[0] .. Porque a próxima função eh constant * void.
