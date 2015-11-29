@@ -68,7 +68,7 @@ void printTupla(int j, column *p, char **name, int nprojection, int registros){
 	for(i = 0; i < nprojection; j++){
 		
 		if(j == registros){
-			printf("break\n");
+			//printf("break\n");
 			break;
 		}
 		//printf("\nName[%d]: %s\np[%d]: %s\n",i,name[i],j,p[j].nomeCampo);
