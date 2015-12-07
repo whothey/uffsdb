@@ -1,109 +1,167 @@
 #include "buffend.h"
 
+void printTupla(int j, column *p, char **name, int nprojection, int registros, int nvalidas){
+	int i, aux=j, x=0;
+
+	if(nvalidas == 0){
+		for(i = 0; i < nprojection; x++){
+
+			if(strcmp(name[i],p[x].nomeCampo) == 0){
+		        if(p[x].tipoCampo == 'S')
+		            printf(" %-20s ", p[x].nomeCampo);
+		    	else
+		            printf(" %-10s ", p[x].nomeCampo);
+		        if(i < nprojection-1)
+		        	printf("|");
+				i++;
+			}
+		}//FOR
+		printf("\n");
+
+		for(x = 0, i = 0; i < nprojection; x++){
+			if(strcmp(name[i],p[x].nomeCampo) == 0){
+				printf("%s",(p[x].tipoCampo == 'S')? "----------------------": "------------");
+				if(i < nprojection-1)
+					printf("+");
+				i++;
+			}
+		}
+		printf("\n");
+
+	}
+
+	if(nvalidas != 0){
+		for(i = 0; i < nprojection; j++){
+			if(j == registros){
+				break;
+
+			}else if(strcmp(name[i], p[j].nomeCampo) == 0){
+
+				if(p[j].tipoCampo == 'S'){
+					printf(" %-20s ", p[j].valorCampo);
+
+				}else if(p[j].tipoCampo == 'I'){
+					int *n = (int *)&p[j].valorCampo[0];
+					printf(" %-10d ", *n);
+
+				}else if(p[j].tipoCampo == 'D'){
+					double *n = (double *)&p[j].valorCampo[0];
+			        printf(" %-10f ", *n);
+
+				}else if(p[j].tipoCampo == 'C'){
+					printf(" %-10c ", p[j].valorCampo[0]);
+				}
+
+				i++;
+				j = aux-1;
+				if(i < nprojection)
+					printf("|");
+			}
+		}
+		printf("\n");
+	}
+}
+
+
+
 void doSelect(qr_select *st){
 
-	int j=0,erro,x,p,position=0,flag=1,primeiraTupla=1,valido=-10,m=0,aux=j,n=0,count=0,registros;
-	int *poAtt;
-	double *auxd = (double *)malloc(sizeof(double));
-	int *auxi = (int *)malloc(sizeof(int));
+	if(st->projection[0][0] == '*'){
+		imprime(st->tables);
+		return ;
+	}
+
+	int j=0,erro,x,p,position=0,flag=1,primeiraTupla=1,m=0,n=0,registros,nvalidas=0,aux=0,full=0;
+	int *poAtt, *auxi = (int *)malloc(sizeof(int));;
+	double *auxd = (double *)malloc(sizeof(double));									   //Vetores auxiliares para conversão do valor.
 
 	struct fs_objects objeto = leObjeto(st->tables);
 
-	list_value *value = (list_value *) malloc(sizeof(list_value));
+	list_value *value = (list_value *) malloc(sizeof(list_value));						   //Lista de valores, usada no SELECT
 	value->next = (list_value *) malloc(sizeof(list_value));
+	list_value *tmp = value;
+	tmp->next = value->next;
 
-    if(!verificaNomeTabela(st->tables)){ //Verificação nome da Tabela
+    if(!verificaNomeTabela(st->tables)){ 												   //Verificação nome da Tabela
         printf("\nERROR: relation \"%s\" was not found.\n\n\n", st->tables);
         return;
     }
  
     tp_table *esquema = leSchema(objeto);
-    if(esquema == ERRO_ABRIR_ESQUEMA){
+    if(esquema == ERRO_ABRIR_ESQUEMA){													   //Se conseguiu criar o esquema?
         printf("ERROR: schema cannot be created.\n");
         free(esquema);
         return;
     }
-	//Bufferpool
-    tp_buffer *bufferpoll = initbuffer();
+
+    tp_buffer *bufferpoll = initbuffer();												   //Bufferpool
     if(bufferpoll == ERRO_DE_ALOCACAO){
         free(bufferpoll);
         free(esquema);
         printf("ERROR: no memory available to allocate buffer.\n");
         return;
     }
-	//'Vetor' que vai guardar todos os acessos a pagina. Para pegar os atributos de maneira direta
-	poAtt = (int *)malloc(sizeof(int) *( objeto.qtdCampos * 2 )); //No máximo terá o tamanho igual a quantidade de campos.
-	//Coloca todas as tuplas daquela tabela no buffer
-	erro = SUCCESS;
+																						   //'Vetor' que vai guardar todos os acessos a pagina. Para acessar de maneira direta.
+	poAtt = (int *)malloc(sizeof(int) *( objeto.qtdCampos * 2 )); 						   //No máximo terá o tamanho igual a quantidade de campos.
+																						   
+	erro = SUCCESS;																		   //Coloca todas as tuplas daquela tabela no buffer
     for(x = 0; erro == SUCCESS; x++)
         erro = colocaTuplaBuffer(bufferpoll, x, esquema, objeto);
 
-	list_value *tmp = value;
-	tmp->next = value->next;
-	int ntuplas=--x,full=0;
-	p = 0;
+	column *pagina;
+	tmp->sname[0] = (char *)malloc(esquema->tam * 10);									   //Alocando o espaço de acordo com o tamanho daquela tabela
+	tmp->sname[1] = (char *)malloc(esquema->tam * 10);									   //REVER!
+	int ntuplas=--x;
+	p = 0 * ntuplas;
 	
-	//Vou começar a ler e salvar na struct *value
-	while(x){
-
-		//Lê uma página p do buffer e salva na variavel *pagina
-		column *pagina = getPage(bufferpoll, esquema, objeto, p);
+																						   
+	while(x){																			   //Vou começar a ler e salvar na struct *value
+																						   //Lê uma página p do buffer e salva na variavel *pagina
+		pagina = getPage(bufferpoll, esquema, objeto, p);
 	    if(pagina == ERRO_PARAMETRO){
             printf("ERROR: could not open the table.\n");
             free(bufferpoll);
             free(esquema);
             return;
 	    }
-		registros = objeto.qtdCampos * bufferpoll[p].nrec;
+		registros = objeto.qtdCampos * bufferpoll[p].nrec;								   //Quantidade de campos * número de registros(linhas).
 		
-		if(primeiraTupla){
-		//Quando for a 1° tupla, vou varrer todo o objeto, encontrar as posições certinhas, salvar no *poAtt. E na próxima página acessar tudo tipo ninja
-			for(j=0; st->nfilters > position; j++){
-				//Verificar se já achou o atributo da esquerda, caso full=1 eh porque já achou.
-				//Mais rápido perguntar se count == 0 do que perguntar a strcmp se pagi..... são iguais
-				if(full == 0){
-					//Se lado esquero não for um atributo, mas sim um valor
-					if(st->filters[position].left_type == 'V'){
-						*(poAtt + n) = -1; //Quando for -1 eh porque o valor vem direto do filters.left
+		if(primeiraTupla){																   //Quando for a 1° tupla, vou varrer a pagina, encontrar as posições certas e salvar no *poAtt.
+			for(j=0; st->nfilters > position; j++){										   //Número de filtros maior que a posição atual do filtro
+																						   
+				if(full == 0){															   //Verificar se já achou o atributo da esquerda, caso full=1 eh porque já achou.
+					if(st->filters[position].left_type == 'V'){							   //Se lado esquero não for um atributo, mas sim direto o valor
+						*(poAtt + n) = -1; 												   //Quando for -1 eh porque o valor vem direto do filters.left
 						n++;
 						full=1;
-						if(st->filters[position].typeAtt == 'C'){
-							strcpy(tmp->sname[0], st->filters[position].left);
-							tmp->typeValue = 'C';
-						}
+						if(st->filters[position].typeAtt == 'C'){			   			   //Caso o tipo seja Char
+							strcpy(tmp->sname[0], st->filters[position].left); 			   //Copio direito do filtro
+							tmp->typeValue = 'C'; 							   			   //typeValue=C porque eh CHAR
 
-						else if(st->filters[position].typeAtt == 'D'){
-							tmp->dvalue[0] = atof(st->filters[position].left);
-							tmp->typeValue = 'D';
-						}
+						}else if(st->filters[position].typeAtt == 'D'){ 		  		   //Caso seja Double
+							tmp->dvalue[0] = atof(st->filters[position].left); 			   //Converto direito do filtro
+							tmp->typeValue = 'D';							   			   //typeValue=D porque eh DOUBLE
 
-						else if(st->filters[position].typeAtt == 'I'){
-							tmp->ivalue[0] = atoi(st->filters[position].left);
-							tmp->typeValue = 'I';
+						}else if(st->filters[position].typeAtt == 'I'){		   			   //Caso seja Int
+							tmp->ivalue[0] = atoi(st->filters[position].left); 			   //Converto direto do filtro
+							tmp->typeValue = 'I'; 							   			   //typeValue=I porque eh INT
 						}
-					}
-
-					//Se nomes são iguais volta 0
-					else if(strcmp(pagina[j].nomeCampo, st->filters[position].left) == 0){
-						//N eh pra controlar o 'vetor' poAtt
-						//Cara, essa linha tá sinistra, preciso te explicar falando. Espero que funcione heuha
-						*(poAtt+n) = j+objeto.qtdCampos;
+																						   //Se não for valor, então eh uma coluna. Vou buscar o valor dela na *pagina
+					}else if(strcmp(pagina[j].nomeCampo, st->filters[position].left) == 0){//Se o nome do campo e o nome do filtro são iguais retorna 0
+						*(poAtt+n) = j+objeto.qtdCampos; 								   //Recebe a próxima ocorrência desse campo, para acessar a próxima tupla de maneira direta.
 						n++;
-						full=1;
-						//Agora salvar na lista Value.
-						if(pagina[j].tipoCampo == 'S' || pagina[j].tipoCampo == 'C'){
-							tmp->sname[0] = (char *)malloc(sizeof(char)*strlen(pagina[j].valorCampo));
-							strcpy(tmp->sname[0],pagina[j].valorCampo);
-							tmp->typeValue = 'C';
-						}
+						full=1;															   //Sempre que for full=1 é porque encontrei o valor da esquerda daquela página
+																  						   //Agora salvar na lista Value.
+						if(pagina[j].tipoCampo == 'S' || pagina[j].tipoCampo == 'C'){	   //Caso seja CHAR ou STRING
+							strcpy(tmp->sname[0],pagina[j].valorCampo);				   	   //Copio o conteúdo da pagina.
+							tmp->typeValue = 'C';									   	   //typeValue=C porqueh eh CHAR
 
-						else if(pagina[j].tipoCampo == 'D'){
-							auxd = (double *)&pagina[j].valorCampo[0];
+						}else if(pagina[j].tipoCampo == 'D'){
+							auxd = (double *)&pagina[j].valorCampo[0];				  	   //Salvando o conteúdo da página para DOUBLE	
 							tmp->dvalue[0] = *auxd;
 							tmp->typeValue = 'D';
-						}
 
-						else if(pagina[j].tipoCampo == 'I'){
+						}else if(pagina[j].tipoCampo == 'I'){							   //Salvando o conteúdo da página para INT
 							auxi = (int *)&pagina[j].valorCampo[0];
 							tmp->ivalue[0] = *auxi;
 							tmp->typeValue = 'I';
@@ -111,49 +169,44 @@ void doSelect(qr_select *st){
 					}
 				}
 
-				//full = 1 sinal que já encontrou o att da esquerda. Antes disso não pode achar o da direita
-				else if(full == 1){
+				else if(full == 1){														   //full=1 sinal que já encontrou o att da esquerda. Antes disso não pode encontrar o da direita
 					flag=0;
-					//Se o lado direito não for um atributo, mas sim um valor
-					if(st->filters[position].right_type == 'V'){
-						*(poAtt+n) = -2; //Quando for -2 eh porque o valor vem direto do filters.right
+					if(st->filters[position].right_type == 'V'){						   //Caso o lado direito não fosse um atributo, mas sim um valor
+						*(poAtt+n) = -2; 												   //Quando for -2 eh porque o valor vem direto do filters.right (da consulta)
 						n++;
-						full = 2;
+						full = 2;														   //Achou o att da direita
 						flag=1;
-						if(st->filters[position].typeAtt == 'C'){
-							tmp->sname[1] = (char *)malloc(sizeof(char)*strlen(pagina[j].valorCampo));
+
+						if(st->filters[position].typeAtt == 'C'){						   //Caso seja CHAR ou STRING
+							st->filters[position].right[strlen(st->filters[position].right)] = '\0';
 							strcpy(tmp->sname[1], st->filters[position].right);
 							tmp->typeValue = 'C';
-						}
 
-						else if(st->filters[position].typeAtt == 'D'){
+						}else if(st->filters[position].typeAtt == 'D'){					   //Caso seja DOUBLE
 							tmp->dvalue[1] = atof(st->filters[position].right);
 							tmp->typeValue = 'D';
-						}
 
-						else if(st->filters[position].typeAtt == 'I'){
+						}else if(st->filters[position].typeAtt == 'I'){ 				   //Caso seja INT
 							tmp->ivalue[1] = atoi(st->filters[position].right);
 							tmp->typeValue = 'I';
 						}
-					}
-					else if(strcmp(pagina[j].nomeCampo, st->filters[position].right) == 0){
-						*(poAtt+n) = j+objeto.qtdCampos;
-						poAtt[n] = j+objeto.qtdCampos;
+
+					}else if(strcmp(pagina[j].nomeCampo, st->filters[position].right) == 0){ //Caso seja uma coluna, preciso buscar o valor na página
+						*(poAtt+n) = j+objeto.qtdCampos;								   //Recebe a ocorrência desse próximo atributo, para depois acessá-lo de maneira direta
 						n++;
-						full=2;
-						flag=1;
-						//Agora salvar na lista Value.
-						if(pagina[j].tipoCampo == 'S' || pagina[j].tipoCampo == 'C'){
+						full=2;															   //Encontrei o atributo da direita.
+						flag=1;															   //Para controlei. Preciso setar uma nova lista *value
+																						   //Agora salvar na lista Value.
+						if(pagina[j].tipoCampo == 'S' || pagina[j].tipoCampo == 'C'){      //Caso seja STRING ou CHAR
 							strcpy(tmp->sname[1], pagina[j].valorCampo);
 							tmp->typeValue = 'C';
-						}
 
-						else if(pagina[j].tipoCampo == 'D'){
+						}else if(pagina[j].tipoCampo == 'D'){							   //Caso seja DOUBLE
 							auxd = (double *)&pagina[j].valorCampo[0];
 							tmp->dvalue[1] = *auxd;
 							tmp->typeValue = 'D';
-						}
-						else if(pagina[j].tipoCampo == 'I'){
+
+						}else if(pagina[j].tipoCampo == 'I'){							   //Caso seja INT
 							auxi = (int *)&pagina[j].valorCampo[0];
 							tmp->ivalue[1] = *auxi;
 							tmp->typeValue = 'I';
@@ -161,76 +214,70 @@ void doSelect(qr_select *st){
 				
 					}
 				}
-				//Se verdadeiro. Preciso fazer tudo de novo hehe
-				if(full > 0 && flag == 1){
-					aux=j;
-					j=-1;
-					//Quero que apenas quando full=2
-					if(full == 2){//Quando full=2, é sinal que preciso criar novo value, e setar o próximo filtro. Pois tudo já foi preenchido
-						tmp->typeLogic = st->filters[position].typeLogico;
-						tmp->typeOp = st->filters[position].typeOp;
-						full = 0;
-						tmp = tmp->next;
-						if(valido == -10)
-							tmp->next =  (list_value *) malloc(sizeof(list_value)); //próxima lista de values
-						position++; //Próximo filtro
-						if(position < st->nfilters)
-							j=-1;
-						else
-							j=aux;
+				
+				if(full > 0 && flag == 1){												   //Se verdadeiro. Preciso começar a página novamente.
+					if(full == 2){														   //Quando full=2, é sinal que preciso criar novo value, e setar o próximo filtro. Pois tudo já foi preenchido
+						aux = j;													       //Preciso salvar o valor do J(controle da pagina). Para no próximo passo.
+						tmp->typeLogic = st->filters[position].typeLogico;				   //Preenchendo a lista value com o tipoLogico, A ou O. 
+						tmp->typeOp = st->filters[position].typeOp;						   //Preenchendo a operação '<', '!=' .....
+						full = 0;														   //Voltar a preencher o novo value
+						tmp = tmp->next;												   //Novo value
+						if(p == 0){														   //Só vai acontecer no 1° registro, para alocar a quantia exata de values
+							tmp->next =  (list_value *) malloc(sizeof(list_value)); 	   //próxima lista de values
+							tmp->sname[0] = (char *)malloc(esquema->tam * 10);			   //Alocando o espaço correto para os nomes 
+							tmp->sname[1] = (char *)malloc(esquema->tam * 10);
+						}
+						position++; 													   //Próximo filtro
 					}
+					j=-1;																   //Preciso voltar a verificar os registros a partir do primeiro. Método SCAN
 				}
-
-			}
-			//Acabei de ler o primeiro registro.. primeira tupla
+			} 																			   //Fim do FOR
+																						   //Acabei de ler o primeiro registro.. primeira tupla
 			primeiraTupla=0;
-			//Já posso chamar o selectWhere.c
-			//strcpy(value->next->sname[1], "Caibi");
-			valido = selectWhere(value);
-			printf("Valido1: %d\n",valido);
-			if(valido)
-				count++;
-		}//If primeira tupla
-/*********************************
-Até aqui fiz apenas pro primeiro registro. E claro, salvei a posição dos atributos para serem lidos no 'vetor' poAtt(tem que testar).
-Agora eh só pegar o resto dos registros, acessá-los diretamente. Salvar no *value e jogar no select
-*************************************/
-
-		//Se não for primeira tupla vem aqui.		
-		if(primeiraTupla == 0){
-			tmp = value;
+			if(selectWhere(value)){														   //Caso seja um registro válido retorna 1. Caso não retorna 0
+				nvalidas++;																   //Quantia de linhas válidas
+				printTupla(0,pagina,st->projection,st->nprojection,registros,nvalidas);	   //Imprimindo a tupla
+			}
+		}																				   //Fim IF da primeira tupla
+/********************************************************************************************************************|
+| Até aqui fiz apenas pro primeiro registro. E claro, salvei a posição dos próximos atributos no 'vetor' poAtt. 	 |
+| Agora eh só pegar o resto dos registros, acessá-los diretamente. Salvar no *value, jogar no select e imprimir.	 |
+|********************************************************************************************************************/
+		if(primeiraTupla == 0){															   //Se não for primeira tupla vem aqui.
+			tmp = value;																   //Preciso voltar a apontar pro inicio do da Lista Value
 			tmp->next = value->next;
-			for(position=0; *(poAtt+m) < registros; j++){
-				if(st->filters[position].typeAtt == 'C'){
-					if(*(poAtt+m) == -1)
-						strcpy(tmp->sname[0], st->filters[position].left);
-					else{
-						strcpy(tmp->sname[0], pagina[*(poAtt+m)].valorCampo);
-						*(poAtt+m) += objeto.qtdCampos;
-					}
-					full = 1;
-					if(*(poAtt+m+1) < registros){
-						if(*(poAtt+m+1) == -2)
+			position = 0;																   //Ler o filtro do começo
+			while(*(poAtt+m) < registros){												   //*(poAtt+m) irá guardar o valor do próximo registro
+
+				if(st->filters[position].typeAtt == 'C'){								   //Caso CHAR
+						if(*(poAtt+m) == -1) 											   //Caso for -1, valor vem direto do operador ESQUERDO no where
+							strcpy(tmp->sname[0], st->filters[position].left);
+						else{															   //Se não, ele vem da página
+							strcpy(tmp->sname[0], pagina[*(poAtt+m)].valorCampo);
+							*(poAtt+m) += objeto.qtdCampos;								   //A posicao do próximo registro
+						}
+						full = 1;														   //Já achei o atributo da esquerda
+					if(*(poAtt+m+1) < registros){										   //Se ainda for uma posicao válida da pagina
+						if(*(poAtt+m+1) == -2)											   //Caso seja -2, atributo vem direto do operador DIREITO no where
 							strcpy(tmp->sname[1], st->filters[position].right);
-						else{
+						else{															   //Se não, vem da página
 							strcpy(tmp->sname[1], pagina[*(poAtt+m+1)].valorCampo);
 							*(poAtt+m+1) += objeto.qtdCampos;
 						}
-						full=2;
+						full=2;															   //Achei o segundo atributo, da direita.
 					}
-				}
 
-				else if(st->filters[position].typeAtt == 'D'){
-					if(*(poAtt+m) == -1)
-						tmp->dvalue[0] = atof(st->filters[position].left);
-					else{
-						auxd = (double *)&pagina[*(poAtt+m)].valorCampo[0];
-						tmp->dvalue[0] = *auxd;
-						*(poAtt+m) += objeto.qtdCampos;
-					}
-					full = 1;
+				}else if(st->filters[position].typeAtt == 'D'){							   //Caso DOUBLE
+						if(*(poAtt+m) == -1)
+							tmp->dvalue[0] = atof(st->filters[position].left);			   //Converter STRING em DOUBLE
+						else{															   //Valor retirado da página
+							auxd = (double *)&pagina[*(poAtt+m)].valorCampo[0];			
+							tmp->dvalue[0] = *auxd;
+							*(poAtt+m) += objeto.qtdCampos;								   //Próxima ocorrência desse atributo
+						}
+						full = 1;
 					if(*(poAtt+m+1) < registros){
-						if(*(poAtt+m+1) == -2)
+						if(*(poAtt+m+1) == -2)											   //Caso DOUBLE para o atributo da DIREITA
 							tmp->dvalue[1] = atof(st->filters[position].right);
 						else{
 							auxd = (double *)&pagina[*(poAtt+m+1)].valorCampo[0];
@@ -239,20 +286,19 @@ Agora eh só pegar o resto dos registros, acessá-los diretamente. Salvar no *va
 						}
 						full=2;
 					}
-				}
 
-				else if(st->filters[position].typeAtt == 'I'){
+				}else if(st->filters[position].typeAtt == 'I'){							   //Caso INT
 					if(*(poAtt+m) == -1)
-						tmp->ivalue[0] = atoi(st->filters[position].left);
-					else{
-						auxi = (int *)&pagina[*(poAtt+m)].valorCampo[0]; //Aqui deu pau.. preciso ler outra página.
-						tmp->ivalue[0] = *auxi;
-						*(poAtt+m) += objeto.qtdCampos;
-					}
-					full = 1;
+							tmp->ivalue[0] = atoi(st->filters[position].left);
+						else{
+							auxi = (int *)&pagina[*(poAtt+m)].valorCampo[0]; 
+							tmp->ivalue[0] = *auxi;
+							*(poAtt+m) += objeto.qtdCampos;
+						}
+						full = 1;
 					if(*(poAtt+m+1) < registros){
 						if(*(poAtt+m+1) == -2){
-							tmp->ivalue[1] = atoi(st->filters[position].right);
+							tmp->ivalue[1] = atoi(st->filters[position].right);			   //Caso INT, atributo vem direto do filtro.
 						}
 						else{
 							auxi = (int *)&pagina[*(poAtt+m+1)].valorCampo[0];
@@ -263,37 +309,37 @@ Agora eh só pegar o resto dos registros, acessá-los diretamente. Salvar no *va
 					}
 				}
 
-				if(full == 2){ //Encheu a lista, setar para a  nova
+				if(full == 2){ 														      //Encheu a lista, setar para a  nova
 					tmp->typeLogic = st->filters[position].typeLogico;
 					tmp->typeOp = st->filters[position].typeOp;
-					tmp->typeValue = st->filters[position].typeAtt;
-					position++;
-					m += 2;
-					full=0;
-					tmp = tmp->next; //proxima lista
-					if(m == n){//Se verdadeiro, terminou um registro
-						valido = selectWhere(value);
-						printf("valido2: %d\n",valido);
-						if(valido)
-							count++;
-						m=0;
+					tmp->typeValue = st->filters[position].typeAtt;					      //Salvando o tipo: Logico, Operacao, Atributo
+					position++;														      //Próximo filtro
+					m += 2;															      //Próximos valores
+					full=0;	
+					tmp = tmp->next; 												      //Proxima lista
+					if(m == n){														      //Se verdadeiro, terminou um registro
+						aux += objeto.qtdCampos;									      //Variavel para impressão, sabe extamente o início desse tupla
+						if(selectWhere(value)){
+							nvalidas++;													  //Contador de Tuplas imprimidas
+							printTupla(aux,pagina,st->projection,st->nprojection,registros,nvalidas);//Bora imprimir
+						}
+						m=0;														      //Para voltar a armazenar do 0.
 						tmp = value;
 						tmp->next = value->next;
 						position=0;		
 					}
 				}
-			}//FOR
-			primeiraTupla=1;
-		}//Else
+			}//while(*(poAtt+m) < registros)
+			primeiraTupla=1;														      //Precico voltar a verificar a primeira tupla. Porque a alocação da página é estranha.
+		}//IF primeira==0;														  	      //Irá redefinir as posições dos atributos
 	n=0;
-	x -= bufferpoll[p++].nrec;
-
-
-
+	x -= bufferpoll[p++].nrec;														      //Quantidade de Tuplas lidas - quantidade armazenada nesta página
 	}//While(x)
-	printf("Com %d Tupla(s) valida(s)\nCom %d Tupla(s) lida(s)\n",count, ntuplas);
+	if(nvalidas == 0)
+		printTupla(0,pagina,st->projection,st->nprojection,registros,nvalidas);
+	printf("(%d rows)\n\n",nvalidas);
 
-}//Fim função.
+}
 
 
 
