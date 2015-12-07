@@ -110,13 +110,15 @@ typedef struct db_connected {
  * Posição na estrutura:      (left op right logic   left op right...)
  */
 typedef struct qr_filter {
-  char typeLogico; // Operador lógico em relação á outras comparações, constantes OP_AND e OP_OR
-  char *left;        // Operador da esquerda do filtro (coluna)
-  char left_type;    // Tipo do operador da esquerda (coluna ou valor) V para valor
-  char typeOp;       // Operador lógico da comparação (>, <, =, <>...)
-  char *right;       // Operador da direita do filtro
-  char right_type;    // Tipo do operador da direita (coluna ou valor) V para valor
-  char typeAtt;		  //Tipo do atributo, seja C p/ char, D p/ double, I p/ int
+  char	 typeLogico;		// Operador lógico em relação á outras comparações, constantes OP_AND e OP_OR
+  char	*left_table;		// Tabela do operador lógico da esquerda, se este for uma coluna
+  char	*left;			// Operador da esquerda do filtro (coluna)
+  char	 left_type;		// Tipo do operador da esquerda (coluna ou valor) V para valor
+  char	 typeOp;		// Operador lógico da comparação (>, <, =, <>...)
+  char	*right_table;		// Tabela do operador lógico da direita, se este for uma coluna
+  char	*right;			// Operador da direita do filtro
+  char	 right_type;		// Tipo do operador da direita (coluna ou valor) V para valor
+  char	 typeAtt;		// Tipo do atributo, seja C p/ char, D p/ double, I p/ int
 } qr_filter;
 
 typedef struct qr_join {
