@@ -1,5 +1,23 @@
 #include "buffend.h"
 
+/* whatOp();
+Objetivo: Retornar o valor para cada operação.
+	1 - Caso seja sem JOIN sem WHERE
+	2 - Caso seja sem JOIN com WHERE
+	3 - Caso seja com JOIN sem WHERE
+	4 - Caso seja com JOIN com WHERE*/
+int whatOp(qr_select *st){
+
+	if(st->nfilters == 0){ //sem WHERE
+		if(st->njoins == 0) //sem JOIN
+			return 1; //sem JOIN sem WHERE
+		return 3; //com JOIN sem WHERE
+	}
+	if(st->njoins == 0) //sem JOIN
+		return 2; //sem JOIN com WHERE
+	return 4; //com JOIN com WHERE
+}
+
 int doOperation(const void * v1, const void * v2, char op, char type){ //Retorna 1 caso Verdadeiro
 
     if(type == 'C'){
@@ -143,174 +161,167 @@ int selectWhere(list_value *value){
 	return 2;
 }
 
-void printTuplaAll(int j, column *p, int nprojection, int registros, int nvalidas){
+void printCabecalho2(column *p, int x){
+	
+	if(p[x].tipoCampo == 'S')
+		printf(" %-20s ", p[x].nomeCampo);
+	else
+		printf(" %-10s ", p[x].nomeCampo);
+	
+}
 
-	int i, x=0;
-
-	if(nvalidas == 0){ //Imprimindo cabeçalho
-		for(x = 0; x < nprojection; x++){
-
-//			if(strcmp(name[i],p[x].nomeCampo) == 0){
-	        if(p[x].tipoCampo == 'S')
-	            printf(" %-20s ", p[x].nomeCampo);
-	    	else
-	            printf(" %-10s ", p[x].nomeCampo);
-	        if(x < nprojection-1)
-	        	printf("|");
-			//i++;
-			//}
-		}//FOR
-		printf("\n");
-
-		for(x = 0, i = 0; i < nprojection; x++){
-			//if(strcmp(name[i],p[x].nomeCampo) == 0){
-				printf("%s",(p[x].tipoCampo == 'S')? "----------------------": "------------");
-				if(i < nprojection-1)
-					printf("+");
-				i++;
-			//}
-		}
-		printf("\n");
-
-	}
-
-	else if(nvalidas != 0){
-
-		for(i = 0; i < nprojection; j++){	
-			if(j == registros){
-				break;
-
-			}
-			//else if(strcmp(name[i], p[j].nomeCampo) == 0){
-
-			if(p[j].tipoCampo == 'S'){
-				printf(" %-20s ", p[j].valorCampo);
-
-			}else if(p[j].tipoCampo == 'I'){
-				int *n = (int *)&p[j].valorCampo[0];
-				printf(" %-10d ", *n);
-
-			}else if(p[j].tipoCampo == 'D'){
-				double *n = (double *)&p[j].valorCampo[0];
-				printf(" %-10f ", *n);
-
-			}else if(p[j].tipoCampo == 'C'){
-				printf(" %-10c ", p[j].valorCampo[0]);
-			}
-
-			i++;
-//			j = aux-1;
-			if(i < nprojection)
+void printCabecalho(column *p, char **name, int nprojection, int j){
+	int i=0,aux=j;
+	
+	if(name[0][0] == '*'){
+		for(i=0; i < nprojection; j++,i++){
+			printCabecalho2(p, j);
+			if(i < (nprojection-1))
 				printf("|");
-
 		}
 		printf("\n");
-
+		
+		for(j=aux, i=0; i < nprojection; j++,i++){
+			printf("%s",(p[j].tipoCampo == 'S')? "----------------------": "------------");
+			if(i < nprojection-1)
+				printf("+");
+		}
+		printf("\n");
+		return;
 	}
-
-
-
-
+	
+	while(i < nprojection){
+		if(strcmp(name[i],p[j].nomeCampo) == 0){
+			printCabecalho2(p, j);
+			if(i < (nprojection-1))
+				printf("|");
+			i++;
+		}
+		j++;
+	}
+	printf("\n");
+	
+	for(j=aux,i=0; i < nprojection; j++){
+		if(strcmp(name[i],p[j].nomeCampo) == 0){
+			printf("%s",(p[j].tipoCampo == 'S')? "----------------------": "------------");
+			if(i < nprojection-1)
+				printf("+");
+			i++;
+		}
+	}
+	printf("\n");
 }
 
 
 
-void printTupla(int j, column *p, char **name, int nprojection, int registros, int nvalidas, int campos){
-	int i, aux=j, x=0;
+void printTupla2(column *p, int j){
+	
+	if(p[j].tipoCampo == 'S'){
+		printf(" %-20s ", p[j].valorCampo);
 
-	if(nvalidas == 0){ //Imprimindo cabeçalho
-		if(name[0][0] == '*')
-			printTuplaAll(j, p, campos, registros, nvalidas);
-		else{
-			for(i = 0; i < nprojection; x++){
+	}else if(p[j].tipoCampo == 'I'){
+		int *n = (int *)&p[j].valorCampo[0];
+		printf(" %-10d ", *n);
 
-				if(strcmp(name[i],p[x].nomeCampo) == 0){
-				    if(p[x].tipoCampo == 'S')
-				        printf(" %-20s ", p[x].nomeCampo);
-					else
-				        printf(" %-10s ", p[x].nomeCampo);
-				    if(i < nprojection-1)
-				    	printf("|");
-					i++;
-				}
-			}//FOR
-			printf("\n");
+	}else if(p[j].tipoCampo == 'D'){
+		double *n = (double *)&p[j].valorCampo[0];
+		printf(" %-10f ", *n);
 
-			for(x = 0, i = 0; i < nprojection; x++){
-				if(strcmp(name[i],p[x].nomeCampo) == 0){
-					printf("%s",(p[x].tipoCampo == 'S')? "----------------------": "------------");
-					if(i < nprojection-1)
-						printf("+");
-					i++;
-				}
+	}else if(p[j].tipoCampo == 'C')
+		printf(" %-10c ", p[j].valorCampo[0]);
+}
+
+
+int naoImprimi(int *v, int i, int j){
+	int x;
+	for(x=0; x < i; x++)
+		if(*(v + x) == j)
+			return 0;
+	return 1;
+}
+
+
+void printTupla(int j, column *p, char **name, int nprojection, int join){
+	int i, aux=j, v[nprojection];
+	
+	if(join){//Precisa ser implementado
+		
+		
+		return;
+	}
+	
+	else{ //Quando nao tiver JOIN imprime aqui
+		if(name[0][0] == '*'){//Imprimindo quando for *
+			for(i = 0; i < nprojection; j++,i++){
+				printTupla2(p, j);
+				if(i < (nprojection-1))
+					printf("|");
 			}
 			printf("\n");
+			
+			return;
 		}
-	}
-
-	if(nvalidas != 0){ //Caso tenha um registro válido irá imprimi-lo
-		if(name[0][0] == '*')
-			printTuplaAll(j, p, campos, registros, nvalidas);
-		else{
-			for(i = 0; i < nprojection; j++){	
-				if(j == registros){
-					break;
-
-				}else if(strcmp(name[i], p[j].nomeCampo) == 0){
-
-					if(p[j].tipoCampo == 'S'){
-						printf(" %-20s ", p[j].valorCampo);
-
-					}else if(p[j].tipoCampo == 'I'){
-						int *n = (int *)&p[j].valorCampo[0];
-						printf(" %-10d ", *n);
-
-					}else if(p[j].tipoCampo == 'D'){
-						double *n = (double *)&p[j].valorCampo[0];
-					    printf(" %-10f ", *n);
-
-					}else if(p[j].tipoCampo == 'C'){
-						printf(" %-10c ", p[j].valorCampo[0]);
-					}
-
-					i++;
-					j = aux-1;
+			
+		for(i = 0; i < nprojection; j++){//Imprimindo quando não for *
+			if(strcmp(name[i], p[j].nomeCampo) == 0){
+				if(naoImprimi(v, i, j)){//Retorna 0 se já IMPRIMI, caso não RETORNA 1
+					printTupla2(p, j);
+					v[i++] = j;
+					j = aux;
 					if(i < nprojection)
 						printf("|");
 				}
 			}
-			printf("\n");
 		}
+		printf("\n");
 	}
 }
 
+void noJoinNoWhere(qr_select *st, tp_buffer *bufferpoll, struct fs_objects *objeto, tp_table *esquema, int registros){
+	int x,p=0,i=0, nvalidas=0;	
+	column *pagina;
+
+	if(st->projection[0][0] == '*')
+		st->nprojection = objeto->qtdCampos;
+	while(registros){
+		pagina = getPage(bufferpoll, esquema, *objeto, p);
+	    if(pagina == ERRO_PARAMETRO){
+            printf("ERROR: could not open the table.\n");
+            free(bufferpoll);
+            free(esquema);
+            return;
+	    }
+		if(p == 0)
+			printCabecalho(pagina, st->projection, st->nprojection, 0);
+		x = objeto->qtdCampos * bufferpoll[p].nrec;								   //Quantidade de campos * número de registros(linhas).
+		while(i < x){
+			printTupla(i, pagina, st->projection, st->nprojection, 0);
+			i += objeto->qtdCampos;
+			nvalidas++;
+		}		
+		i=0;
+		registros -= bufferpoll[p++].nrec;										  //Quantidade de Tuplas lidas - quantidade armazenada nesta página
+	}
+	printf("(%d rows)\n\n",nvalidas);
+	
+}
 
 
 void doSelect(qr_select *st){
 
-	int j=0,erro,x,p,position=0,flag=1,primeiraTupla=1,m=0,n=0,registros,nvalidas=0,aux=0,full=0;
-	int *poAtt, *auxi=(int *)malloc(sizeof(int));
-	double *auxd = (double *)malloc(sizeof(double));									   //Vetores auxiliares para conversão do valor.
-
+	int x, erro;	
 	struct fs_objects objeto = leObjeto(st->tables);
-
-	list_value *value = (list_value *) malloc(sizeof(list_value));						   //Lista de valores, usada no SELECT
-	value->next = (list_value *) malloc(sizeof(list_value));
-	list_value *tmp = value;
-	tmp->next = value->next;
 
     if(!verificaNomeTabela(st->tables)){ 												   //Verificação nome da Tabela
         printf("\nERROR: relation \"%s\" was not found.\n\n\n", st->tables);
         return;
     }
- 
     tp_table *esquema = leSchema(objeto);
     if(esquema == ERRO_ABRIR_ESQUEMA){													   //Se conseguiu criar o esquema?
         printf("ERROR: schema cannot be created.\n");
         free(esquema);
         return;
     }
-
     tp_buffer *bufferpoll = initbuffer();												   //Bufferpool
     if(bufferpoll == ERRO_DE_ALOCACAO){
         free(bufferpoll);
@@ -318,18 +329,51 @@ void doSelect(qr_select *st){
         printf("ERROR: no memory available to allocate buffer.\n");
         return;
     }	
-																						   //'Vetor' que vai guardar todos os acessos a pagina. Para acessar de maneira direta.
-	poAtt = (int *)malloc(sizeof(int) *( objeto.qtdCampos * 2 )); 						   //No máximo terá o tamanho igual a quantidade de campos.		   
 	erro = SUCCESS;																		   //Coloca todas as tuplas daquela tabela no buffer
     for(x = 0; erro == SUCCESS; x++)
         erro = colocaTuplaBuffer(bufferpoll, x, esquema, objeto);
-
-	column *pagina;
-	tmp->sname[0] = (char *)malloc(esquema->tam * 10);									   //Alocando o espaço de acordo com o tamanho daquela tabela
-	tmp->sname[1] = (char *)malloc(esquema->tam * 10);									   
-	int ntuplas=--x;
-	p = 0 * ntuplas;
-
+   
+	int ntuplas = --x;
+	int op = whatOp(st);
+	switch(op){
+		//Caso sem JOIN sem WHERE. Ou seja, só imprimir.
+		case 1:
+			noJoinNoWhere(st, bufferpoll, &objeto, esquema, ntuplas);
+			break;
+		//Caso sem JOIN com WHERE
+		case 2:
+			/*int j=0,position=0,flag=1,primeiraTupla=1,m=0,n=0,registros,nvalidas=0,aux=0,full=0;
+			int *poAtt, *auxi=(int *)malloc(sizeof(int));
+			double *auxd = (double *)malloc(sizeof(double));									   //Vetores auxiliares para conversão do valor.
+			list_value *value = (list_value *) malloc(sizeof(list_value));						   //Lista de valores, usada no SELECT
+			value->next = (list_value *) malloc(sizeof(list_value));
+			list_value *tmp = value;
+			tmp->next = value->next;
+			tmp->sname[0] = (char *)malloc(esquema->tam * 10);									   //Alocando o espaço de acordo com o tamanho daquela tabela
+			tmp->sname[1] = (char *)malloc(esquema->tam * 10);
+			//'Vetor' que vai guardar todos os acessos a pagina. Para acessar de maneira direta.
+			poAtt = (int *)malloc(sizeof(int) *( objeto.qtdCampos * 2 )); 						   //No máximo terá o tamanho igual a quantidade de campos.		   
+		*/
+		
+			break;
+		//Caso com JOIN sem WHERE
+		case 3:
+		
+			break;
+		//Caso com JOIN com WHERE
+		case 4:
+		
+			break;
+		
+		
+		
+	}
+}
+	
+	
+	
+	
+/*	
 	while(x){																			   //Vou começar a ler e salvar na struct *value
 																						   //Lê uma página p do buffer e salva na variavel *pagina
 		pagina = getPage(bufferpoll, esquema, objeto, p);
@@ -451,16 +495,16 @@ void doSelect(qr_select *st){
 				printTupla(0,pagina,st->projection,st->nprojection,registros,nvalidas,objeto.qtdCampos);	   //Imprimindo a tupla
 			}
 		}																				   //Fim IF da primeira tupla
-/********************************************************************************************************************|
+********************************************************************************************************************|
 | Até aqui fiz apenas pro primeiro registro. E claro, salvei a posição dos próximos atributos no 'vetor' poAtt. 	 |
 | Agora eh só pegar o resto dos registros, acessá-los diretamente. Salvar no *value, jogar no select e imprimir.	 |
-|********************************************************************************************************************/
+|********************************************************************************************************************
 		if(primeiraTupla == 0){															   //Se não for primeira tupla vem aqui.
 			tmp = value;																   //Preciso voltar a apontar pro inicio do da Lista Value
 			tmp->next = value->next;
 			position = 0;																   //Ler o filtro do começo
 			j=1;
-			while(*(poAtt+m) < registros){												   //*(poAtt+m) irá guardar o valor do próximo registro
+			while(*(poAtt+m) < registros){												   //(poAtt+m) irá guardar o valor do próximo registro
 				
 				if(st->filters[position].typeAtt == 'C'){								   //Caso CHAR
 						if(*(poAtt+m) == -1) 											   //Caso for -1, valor vem direto do operador ESQUERDO no where
@@ -560,7 +604,7 @@ void doSelect(qr_select *st){
 
 }
 
-
+*/
 
 
 
