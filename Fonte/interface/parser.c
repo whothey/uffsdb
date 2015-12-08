@@ -25,6 +25,8 @@ qr_select GLOBAL_SELECT;
 qr_filter *TEMP_FILTER;
 int       TEMP_FILTER_POSITION;
 
+qr_join   *TEMP_JOIN;
+
 void connect(char *nome) {
     int r;
     r = connectDB(nome);
@@ -370,8 +372,8 @@ void start_select()
   GLOBAL_SELECT.filters = NULL;
 
   GLOBAL_SELECT.njoins = 0;
-  free(GLOBAL_SELECT.join);
-  GLOBAL_SELECT.join = NULL;
+  free(GLOBAL_SELECT.joins);
+  GLOBAL_SELECT.joins = NULL;
 }
 
 int set_select_table(char **table)
@@ -570,6 +572,12 @@ void dump_select()
     printf("Filtro #%02d:\n", i + 1);
     dump_where(GLOBAL_SELECT.filters[i]);
   }
+
+  printf("Quantidade de joins: %d\n", GLOBAL_SELECT.njoins);
+  for (i = 0; i < GLOBAL_SELECT.njoins; i++) {
+    printf("Join #%02d:\n", i + 1);
+    dump_join(GLOBAL_SELECT.joins[i]);
+  }
 }
 
 void dump_where(qr_filter filter)
@@ -641,23 +649,67 @@ void dump_where(qr_filter filter)
   return;
 }
 
+void dump_join(qr_join join)
+{
+  if (join.is_natural) {    
+    printf("NATURAL JOIN %s\n", join.table);
+  } else {
+    printf("JOIN %s ON:\n", join.table);
+    dump_where(*(join.condition));
+  }
+}
+
+void create_new_join()
+{
+  free(TEMP_JOIN);
+  TEMP_JOIN = malloc(sizeof(qr_join));
+  TEMP_JOIN->table      = NULL;
+  TEMP_JOIN->condition  = NULL;
+  TEMP_JOIN->is_natural = 0;
+}
+
 int set_natural_join(char** table)
 {
-
+  TEMP_JOIN->is_natural = 1;
+  TEMP_JOIN->table      = strdup(*table);
+  
   return 1;
 }
 
 int add_filter_to_join()
 {
+  TEMP_JOIN->condition = TEMP_FILTER;
+  TEMP_FILTER = NULL;
+  
   return 1;
 }
 
 int add_join_to_select()
 {
+  int join_index = GLOBAL_SELECT.njoins++;
+  qr_join *aux;
+
+  if (TEMP_JOIN == NULL) return 0;
+
+  aux = (qr_join *)realloc(GLOBAL_SELECT.joins, sizeof(qr_join) * GLOBAL_SELECT.njoins);
+
+  if (aux == NULL) {
+    fprintf(stderr, "Cannot realloc JOIN conditions!");
+    GLOBAL_PARSER.noerror = 0;
+
+    return 0;
+  }
+
+  GLOBAL_SELECT.joins = aux;
+  GLOBAL_SELECT.joins[join_index] = *TEMP_JOIN;
+  TEMP_JOIN = NULL;
+  
   return 1;
 }
 
 int set_join_table(char **table)
 {
+  TEMP_JOIN->table = strdup(*table);
+  
   return 1;
 }

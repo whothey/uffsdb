@@ -157,7 +157,7 @@ drop_database: DROP DATABASE {setMode(OP_DROP_DATABASE);} OBJECT {setObjName(yyt
  *******************************************/
 
 // Sintaxe do SELECT
-select: SELECT {setMode(OP_SELECT_ALL); start_select();} column_list_projection FROM table_select where_cond join_cond semicolon {return 0;};
+select: SELECT {setMode(OP_SELECT_ALL); start_select();} column_list_projection FROM table_select join_cond where_cond semicolon {return 0;};
 
 // Definindo Projeções
 column_list_projection: {add_column_to_projection(yytext);} '*' | column_projection | column_projection ',' column_list_projection;
@@ -193,8 +193,8 @@ filter_value: ALPHANUM {add_filter_condition(yytext, FILTER_ALPHANUM);}
             | VALUE {add_filter_condition(yytext, FILTER_VALUE);};
 
 join_cond:/* condição JOIN é opcional */ {add_join_to_select();}
-         | NATURAL JOIN OBJECT {set_natural_join(yytext);} join_cond
-         | JOIN OBJECT {set_join_table(yytext);} ON filter {add_filter_to_join();} join_cond;
+         | NATURAL JOIN OBJECT {create_new_join(); set_natural_join(yytext);} join_cond
+         | JOIN OBJECT {create_new_join(); set_join_table(yytext);} ON filter {add_filter_to_join();} join_cond;
 
 /* Antigo SELECT */
 /*select: SELECT {setMode(OP_SELECT);} column_list_select FROM table_select semicolon {return 0;};*/

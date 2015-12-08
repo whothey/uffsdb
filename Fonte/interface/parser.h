@@ -236,6 +236,11 @@ int add_filter_to_select();
  ** JOIN CLAUSE
  ******************************/
 /**
+ * Cria uma nova instância de join na variavel global TEMP_JOIN
+ */
+void create_new_join();
+
+/**
  * Define NATURAL JOIN para a tabela passada como argumento
  */
 int set_natural_join(char** table);
@@ -268,3 +273,8 @@ void dump_select();
  * Informa os dados da estrutura qr_filter referenciada.
  */
 void dump_where(qr_filter filter);
+
+/**
+ * Informa os dados da estrutura qr_join referenciada
+ */
+void dump_join(qr_join join);
