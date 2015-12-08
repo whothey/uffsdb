@@ -417,12 +417,14 @@ int create_new_filter()
   free(TEMP_FILTER);
   TEMP_FILTER = (qr_filter *) malloc(sizeof(qr_filter));
   
-  TEMP_FILTER->typeLogico = 'N';
-  TEMP_FILTER->left = NULL;
-  TEMP_FILTER->left_type = 'N';
-  TEMP_FILTER->typeOp = '=';
-  TEMP_FILTER->right = NULL;
-  TEMP_FILTER->right_type = 'N';
+  TEMP_FILTER->typeLogico   = 'N';
+  TEMP_FILTER->left_table   = NULL;
+  TEMP_FILTER->left	    = NULL;
+  TEMP_FILTER->left_type    = 'N';
+  TEMP_FILTER->typeOp	    = '=';
+  TEMP_FILTER->right_table  = NULL;
+  TEMP_FILTER->right	    = NULL;
+  TEMP_FILTER->right_type   = 'N';
 
   return 1;
 }
@@ -447,6 +449,19 @@ int set_filter_op(char **op)
     TEMP_FILTER->typeOp = OP_DIFERENTE;
   else
     TEMP_FILTER->typeOp = **op;
+
+  return 1;
+}
+
+int promote_filter_and_substitute(char **table)
+{
+  if (TEMP_FILTER->left != NULL && TEMP_FILTER->left_table == NULL) {
+    TEMP_FILTER->left_table = TEMP_FILTER->left;
+    TEMP_FILTER->left       = strdup(*table);
+  } else {
+    TEMP_FILTER->right_table = TEMP_FILTER->right;
+    TEMP_FILTER->right       = strdup(*table);
+  }
 
   return 1;
 }
@@ -568,6 +583,11 @@ void dump_where(qr_filter filter)
   else
     printf("N/A\n");
 
+  if (filter.left_table == NULL)
+    printf("Tabela da coluna do operador da esquerda: [NÃO HÁ]\n");
+  else
+    printf("Tabela da coluna do operador da esquerda: %s\n", filter.left_table);
+  
   printf("Operador da esquerda: %s ", filter.left);
 
   switch (filter.left_type) {
@@ -599,6 +619,11 @@ void dump_where(qr_filter filter)
   default: printf("%c\n", filter.typeOp);
   }
 
+  if (filter.right_table == NULL)
+    printf("Tabela da coluna do operador da direita: [NÃO HÁ]\n");
+  else
+    printf("Tabela da coluna do operador da direita: %s\n", filter.right_table);
+
   printf("Operador da direita: %s ", filter.right);
 
   switch (filter.right_type) {
@@ -614,4 +639,25 @@ void dump_where(qr_filter filter)
   }
   
   return;
+}
+
+int set_natural_join(char** table)
+{
+
+  return 1;
+}
+
+int add_filter_to_join()
+{
+  return 1;
+}
+
+int add_join_to_select()
+{
+  return 1;
+}
+
+int set_join_table(char **table)
+{
+  return 1;
 }

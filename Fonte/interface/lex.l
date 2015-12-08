@@ -16,6 +16,9 @@
 (?i:SELECT)                                             return SELECT;
 (?i:WHERE)                                              return WHERE;
 ((<=)|(>=)|(<>)|[><=])                                  return COMP_OP;
+(?i:NATURAL)                                            return NATURAL;
+(?i:JOIN)                                               return JOIN;
+(?i:ON)                                                 return ON;
 (?i:AND)                                                return AND;
 (?i:OR)                                                 return OR;
 (?i:IN)                                                 return IN;
@@ -39,6 +42,7 @@ help                                                    return HELP;
 [\\][\?]                                                return HELP;
 (?i:CLEAR)                                              return CLEAR;
 
+[.]                                                             return *yytext;
 [,]								return *yytext;
 [;]								return *yytext;
 [*]								return *yytext;

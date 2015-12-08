@@ -122,8 +122,9 @@ typedef struct qr_filter {
 } qr_filter;
 
 typedef struct qr_join {
-  char *table;
-  qr_filter condition;
+  char      *table;
+  int        is_natural;
+  qr_filter  condition;
 } qr_join;
 
 /**

@@ -31,7 +31,8 @@ int yywrap() {
         DROP        OBJECT      NUMBER      VALUE       QUIT
         LIST_TABLES LIST_TABLE  ALPHANUM    CONNECT     HELP
         LIST_DBASES CLEAR WHERE IN AND OR EXISTS ALL_COLUMNS
-        COMP_OP;
+        COMP_OP     NATURAL     JOIN	ON;
+
 
 start: insert | select | create_table | create_database | drop_table | drop_database
      | table_attr | list_tables | connection | exit_program | semicolon {GLOBAL_PARSER.consoleFlag = 1; return 0;}
@@ -156,7 +157,7 @@ drop_database: DROP DATABASE {setMode(OP_DROP_DATABASE);} OBJECT {setObjName(yyt
  *******************************************/
 
 // Sintaxe do SELECT
-select: SELECT {setMode(OP_SELECT_ALL); start_select();} column_list_projection FROM table_select where_cond semicolon {return 0;};
+select: SELECT {setMode(OP_SELECT_ALL); start_select();} column_list_projection FROM table_select where_cond join_cond semicolon {return 0;};
 
 // Definindo Projeções
 column_list_projection: {add_column_to_projection(yytext);} '*' | column_projection | column_projection ',' column_list_projection;
@@ -176,12 +177,24 @@ filter: {create_new_filter(); set_filter_value_pos(FILTER_POS_LEFT);} column_val
 logic_op: AND {set_filter_logic_op(OP_LOGIC_AND);} | OR {set_filter_logic_op(OP_LOGIC_OR);};
 
 // Identifica uma coluna ou valor especifico
-column_value: OBJECT {add_filter_condition(yytext, FILTER_COLUMN);} | filter_value;
+column_value: column_specification | filter_value;
+
+// Determina que uma especificaçao de coluna pode ser COLUNA.CAMPO ou apenas CAMPO
+column_specification: filter_column | table_column;
+
+// Veja a definição de promote_filter_and_substitute no 'parser.h' para maiores
+// informações de como estas linhas funcionam
+filter_column: OBJECT {add_filter_condition(yytext, FILTER_COLUMN);};
+table_column: filter_column '.' OBJECT {promote_filter_and_substitute(yytext);};
 
 // Identifica valores (alfanumericos, etc..)
 filter_value: ALPHANUM {add_filter_condition(yytext, FILTER_ALPHANUM);}
             | NUMBER {add_filter_condition(yytext, FILTER_NUMBER);}
             | VALUE {add_filter_condition(yytext, FILTER_VALUE);};
+
+join_cond:/* condição JOIN é opcional */ {add_join_to_select();}
+         | NATURAL JOIN OBJECT {set_natural_join(yytext);} join_cond
+         | JOIN OBJECT {set_join_table(yytext);} ON filter {add_filter_to_join();} join_cond;
 
 /* Antigo SELECT */
 /*select: SELECT {setMode(OP_SELECT);} column_list_select FROM table_select semicolon {return 0;};*/
