@@ -349,3 +349,56 @@ Os comandos SQL e os objetos das relações (i.e. <NomeTabelas>, <NomeCampos> ..
 	ex: 
 		<TABELA> e <tabela> se referem a mesma relação.
 		<INSERT> e <insert> se referem ao mesmo comando SQL.
+
+####################################### LEIA-ME: PARTE 5 (A VOLTA DOS QUE NÃO FORAM) ###################################
+
+Descrição: Implementação do SELECT com projeções, filtros e um JOIN simples.
+Compilação:
+	A compilação completa é feita através to comando 'make withyacc', que especifica a compilação do MAKEFILE presente dentro da pasta 'Fonte/interface/', e consequentemente a atualização dos comandos do YaCC e LEX.
+	Se você possui o VALGRIND instalado, é possível executar a compilação e iniciar um pseudo-debug com 'make debug', que irá executar 'make withyacc' e então inicializará valgrind no executavel principal.
+	Se você deseja apenas compilar e rodar o programa é possível executar 'make run', então o 'make withyacc' é executado e o programa é iniciado.
+
+Agora o banco de dados suporta selects mais elaborados, seguindo a seguinte sintaxe:
+
+SELECT <PROJECTION>
+FROM <TABLE>
+[JOIN CLAUSE]
+[WHERE <CONDITION>];
+
+Onde:
+<PROJECTION> pode ser '*' ou uma lista de colunas separadas por vírgula (col1, col2)
+	     referente á tabela na clausula FROM;
+
+<JOIN> é a clausula de JOIN, podendo ser escrita como:
+       NATURAL JOIN <TABLE>        - Que irá registros da tabela da clausula FROM com a tabela da clausula JOIN comparando colunas com o mesmo nome e mesmo valor;
+       JOIN <TABLE> ON <CONDITION> - Que irá unir os registros que satisfazerem <CONDITION>;
+       
+<CONDITION> é conhecido como filtro, e pode ser representado por:
+	    <OPERATING> <OPERATION> <OPERATING>
+
+<OPERATING> pode ser a representação de um nome de uma coluna da tabela (col1), ser prefixado com a tabela de origem (table1.col1) ou um valor: [10 | 10.4 | 'DEZ'];
+<OPERATION> é uma das operações:
+	    "="  que representa a igualdade entre os operandos
+	    "<"  que representa que o primeiro operando é MENOR que o segundo
+	    ">"  que representa que o primeiro operando é MAIOR que o segundo
+	    "<=" que representa que o primeiro operando é MENOR ou IGUAL ao segundo
+	    ">=" que representa que o primeiro operando é MAIOR ou IGUAL ao segundo
+	    "<>" que representa que os operandos são diferentes
+
+Exemplo:
+
+Para uma tabela com definição:
+CREATE TABLE teste (
+  id   INTEGER PRIMARY KEY,
+  name VARCHAR(100) NOT NULL
+)
+
+SELECT id, name FROM teste;
+-- TEM O MESMO EFEITO DE --
+SELECT * FROM teste;
+
+SELECT id FROM teste WHERE id < 10;
+SELECT id FROM teste WHERE teste.id < 10;
+-- Imprime todos os ID's que forem menor menores que 10 --
+
+TODO: O resto

@@ -23,6 +23,7 @@
  */
 extern qr_select GLOBAL_SELECT; // Current select scope
 extern qr_filter *TEMP_FILTER; // Temp filter creation
+extern qr_join   *TEMP_JOIN; // Temp join to creation
 extern int       TEMP_FILTER_POSITION;
 
 /* Estrutura global que guarda as informações obtidas pelo yacc
@@ -142,6 +143,13 @@ void setMode(char mode);
  * do próprio atributo.
  **********************************************************************/
 
+
+/**
+ * Limpa as aspas de uma string (de um valor alfanumerico definido no
+ * select)
+ */
+char *clean_qmarks(char *name);
+
 /** 
  * Inicia o estado geral da estrutura GLOBAL_SELECT
  */
@@ -190,6 +198,20 @@ int set_filter_value_pos(int position);
 int set_filter_op(char **op);
 
 /**
+ * Devido á lógica do YaCC, ou falta de lógica minha, em um
+ * determinado momento não pude fazer com que o YaCC interpretasse a
+ * regra TABELA.COLUNA seguindo a logica de OBJECT.OBJECT, então tive
+ * que pegar o primeiro valor de OBJECT (OBJECT1), inserir como a
+ * COLUNA, se o token seguinte for um '.', então promovo essa antiga
+ * coluna em tabela, no caso a seguinte sequencia foi digitada
+ * (OBJECT1.OBJECT2), e o OBJECT1 estava sendo considerado como
+ * coluna, então promovo OBJECT1 para a posição de TABELA na STRUCT
+ * TEMP_FILTER e substituo o valor do operando, antes ocupado por
+ * OBJECT1 por OBJECT2, que é nosso parametro dessa função.
+ */
+int promote_filter_and_substitute(char **table);
+
+/**
  * Adiciona um operando no TEMP_FILTER, também se descreve o tipo
  * desse operando;
  *
@@ -210,11 +232,33 @@ int set_filter_logic_op(char op);
  */
 int add_filter_to_select();
 
+/******************************
+ ** JOIN CLAUSE
+ ******************************/
 /**
- * Limpa as aspas de uma string (de um valor alfanumerico definido no
- * select)
+ * Cria uma nova instância de join na variavel global TEMP_JOIN
  */
-char *clean_qmarks(char *name);
+void create_new_join();
+
+/**
+ * Define NATURAL JOIN para a tabela passada como argumento
+ */
+int set_natural_join(char** table);
+
+/**
+ * Após a definição de um filtro, adiciona-o para a estrutura de JOIN
+ */
+int add_filter_to_join();
+
+/**
+ * Após a finalização da estrutura do JOIN, adiciona-o para a estrutura do SELECT
+ */
+int add_join_to_select();
+
+/**
+ * Define uma tabela para a estrutura de JOIN
+ */
+int set_join_table(char **table);
 
 /*************************************************************
  ** Funções auxiliares para debug das estruturas globais
@@ -229,3 +273,8 @@ void dump_select();
  * Informa os dados da estrutura qr_filter referenciada.
  */
 void dump_where(qr_filter filter);
+
+/**
+ * Informa os dados da estrutura qr_join referenciada
+ */
+void dump_join(qr_join join);

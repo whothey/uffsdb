@@ -78,7 +78,10 @@ extern int yydebug;
     OR = 288,
     EXISTS = 289,
     ALL_COLUMNS = 290,
-    COMP_OP = 291
+    COMP_OP = 291,
+    NATURAL = 292,
+    JOIN = 293,
+    ON = 294
   };
 #endif
 /* Tokens.  */
@@ -116,6 +119,9 @@ extern int yydebug;
 #define EXISTS 289
 #define ALL_COLUMNS 290
 #define COMP_OP 291
+#define NATURAL 292
+#define JOIN 293
+#define ON 294
 
 /* Value type.  */
 #if ! defined YYSTYPE && ! defined YYSTYPE_IS_DECLARED
@@ -129,7 +135,7 @@ union YYSTYPE
     int subtok;
     char *strval;
 
-#line 133 "y.tab.h" /* yacc.c:1909  */
+#line 139 "y.tab.h" /* yacc.c:1909  */
 };
 
 typedef union YYSTYPE YYSTYPE;
