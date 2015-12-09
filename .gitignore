@@ -1,4 +1,9 @@
-prog
+Fonte/interface/lex.yy.c
+Fonte/interface/parser.o
+Fonte/interface/y.tab.h
+Fonte/interface/y.tab.c
+Fonte/dg_uffsdb
+Fonte/Ibetres
 *.dat
 
 # Emacs Ignore
