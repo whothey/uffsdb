@@ -651,12 +651,17 @@ void dump_where(qr_filter filter)
 
 void dump_join(qr_join join)
 {
-  if (join.is_natural) {    
-    printf("NATURAL JOIN %s\n", join.table);
-  } else {
-    printf("JOIN %s ON:\n", join.table);
-    dump_where(*(join.condition));
+  switch (join.type) {
+  case JOIN_TYPE_INNER: printf("JOIN %s ON:\n", join.table); break;
+  case JOIN_TYPE_NATURAL: printf("NATURAL JOIN %s\n", join.table); break;
+  case JOIN_TYPE_LEFT: printf("LEFT JOIN %s ON:\n", join.table); break;
+  case JOIN_TYPE_RIGHT: printf("RIGHT JOIN %s ON:\n", join.table); break;
+  case JOIN_TYPE_FULL: printf("FULL JOIN %s ON:\n", join.table); break;
+  default: printf("WHOOPS! No join type defined\n");
   }
+
+  if (join.condition != NULL)
+      dump_where(*(join.condition));
 }
 
 void create_new_join()
@@ -665,13 +670,12 @@ void create_new_join()
   TEMP_JOIN = malloc(sizeof(qr_join));
   TEMP_JOIN->table      = NULL;
   TEMP_JOIN->condition  = NULL;
-  TEMP_JOIN->is_natural = 0;
+  TEMP_JOIN->type       = 0;
 }
 
-int set_natural_join(char** table)
+int set_join_type(int type)
 {
-  TEMP_JOIN->is_natural = 1;
-  TEMP_JOIN->table      = strdup(*table);
+  TEMP_JOIN->type = type;
   
   return 1;
 }

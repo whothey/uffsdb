@@ -31,7 +31,8 @@ int yywrap() {
         DROP        OBJECT      NUMBER      VALUE       QUIT
         LIST_TABLES LIST_TABLE  ALPHANUM    CONNECT     HELP
         LIST_DBASES CLEAR WHERE IN AND OR EXISTS ALL_COLUMNS
-        COMP_OP     NATURAL     JOIN	ON;
+        COMP_OP     NATURAL     LEFT        RIGHT       FULL
+        JOIN	    ON;
 
 
 start: insert | select | create_table | create_database | drop_table | drop_database
@@ -193,8 +194,12 @@ filter_value: ALPHANUM {add_filter_condition(yytext, FILTER_ALPHANUM);}
             | VALUE {add_filter_condition(yytext, FILTER_VALUE);};
 
 join_cond:/* condição JOIN é opcional */ {add_join_to_select();}
-         | NATURAL JOIN OBJECT {create_new_join(); set_natural_join(yytext);} join_cond
-         | JOIN OBJECT {create_new_join(); set_join_table(yytext);} ON filter {add_filter_to_join();} join_cond;
+         | LEFT    JOIN OBJECT {create_new_join(); set_join_table(yytext); set_join_type(JOIN_TYPE_LEFT);}  ON filter {add_filter_to_join();} join_cond
+	 | RIGHT   JOIN OBJECT {create_new_join(); set_join_table(yytext); set_join_type(JOIN_TYPE_RIGHT);} ON filter {add_filter_to_join();} join_cond
+	 | FULL    JOIN OBJECT {create_new_join(); set_join_table(yytext); set_join_type(JOIN_TYPE_FULL);}  ON filter {add_filter_to_join();} join_cond
+         | NATURAL JOIN OBJECT {create_new_join(); set_join_table(yytext); set_join_type(JOIN_TYPE_NATURAL);} join_cond
+         |         JOIN OBJECT {create_new_join(); set_join_table(yytext); set_join_type(JOIN_TYPE_INNER);}  ON filter {add_filter_to_join();} join_cond
+	 ;
 
 /* Antigo SELECT */
 /*select: SELECT {setMode(OP_SELECT);} column_list_select FROM table_select semicolon {return 0;};*/

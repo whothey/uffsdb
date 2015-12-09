@@ -17,6 +17,9 @@
 (?i:WHERE)                                              return WHERE;
 ((<=)|(>=)|(<>)|[><=])                                  return COMP_OP;
 (?i:NATURAL)                                            return NATURAL;
+(?i:LEFT)                                               return LEFT;
+(?i:RIGHT)                                              return RIGHT;
+(?i:FULL)                                               return FULL;
 (?i:JOIN)                                               return JOIN;
 (?i:ON)                                                 return ON;
 (?i:AND)                                                return AND;

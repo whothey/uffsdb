@@ -243,7 +243,7 @@ void create_new_join();
 /**
  * Define NATURAL JOIN para a tabela passada como argumento
  */
-int set_natural_join(char** table);
+int set_join_type(int type);
 
 /**
  * Após a definição de um filtro, adiciona-o para a estrutura de JOIN

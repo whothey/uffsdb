@@ -30,6 +30,13 @@
 #define FILTER_TYPE_NUMBER   'I' // ... Inteiro
 #define FILTER_TYPE_ALPHANUM 'C' // ... Cadeia de caracteres
 
+// Join Types
+#define JOIN_TYPE_NATURAL 50
+#define JOIN_TYPE_INNER   51
+#define JOIN_TYPE_LEFT    52
+#define JOIN_TYPE_RIGHT   53
+#define JOIN_TYPE_FULL    54
+
 struct fs_objects { // Estrutura usada para carregar fs_objects.dat
     char nome[TAMANHO_NOME_TABELA];     //  Nome da tabela.
     int cod;                            // Código da tabela.
@@ -121,10 +128,15 @@ typedef struct qr_filter {
   char	 typeAtt;		// Tipo do atributo, seja C p/ char, D p/ double, I p/ int
 } qr_filter;
 
+/**
+ * qr_join
+ *
+ * Estrutura que define um JOIN para o reconhecedor
+ */
 typedef struct qr_join {
-  char      *table;
-  int        is_natural;
-  qr_filter *condition;
+  char      *table;     // Tabela que foi referenciada no JOIN
+  int        type;      // Tipo do JOIN (constantes JOIN_TYPE_*)
+  qr_filter *condition; // Condição para se satisfazer o JOIN
 } qr_join;
 
 /**
