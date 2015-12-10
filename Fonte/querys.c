@@ -306,9 +306,42 @@ void noJoinNoWhere(qr_select *st, tp_buffer *bufferpoll, struct fs_objects *obje
 	
 }
 
+tp_table *montaCabecalho(qr_select *select)
+{
+  int i;
+  table    *temp_table  = iniciaTabela("temp_select");
+  tp_table *temp_schema = temp_table->esquema,
+           *p;
+
+  
+  if (select->projection[0][0] == '*') {
+    for (p = leSchema(leObjeto(select->tables)); p != NULL; p = p->next)
+      adicionaCampo(temp_table, p->nome, p->tipo, p->tam, p->chave, p->tabelaApt, p->attApt);
+
+    for (i = 0; i < select->njoins; i++) {
+      for (p = leSchema(leObjeto(select->joins[i].table)); p != NULL; p = p->next)
+	adicionaCampo(temp_table, p->nome, p->tipo, p->tam, p->chave, p->tabelaApt, p->attApt);
+    }
+  } else {
+    for (p = leSchema(leObjeto(select->tables)); p != NULL; p = p->next) {
+      for (i = 0; i < select->nprojection; i++) {
+	if (strcmp(p->nome, select->projection[i]))
+	  adicionaCampo(temp_table, p->nome, p->tipo, p->tam, p->chave, p->tabelaApt, p->attApt);
+      }
+    }
+
+    for (i = 0; i < select->njoins; i++) {
+      for (p = leSchema(leObjeto(select->joins[i].table)); p != NULL; p = p->next) {
+	if (strcmp(p->nome, select->projection[i]))
+	  adicionaCampo(temp_table, p->nome, p->tipo, p->tam, p->chave, p->tabelaApt, p->attApt);
+      }
+    }
+  }
+
+  return temp_schema;
+}
 
 void doSelect(qr_select *st){
-
 	int x, erro;	
 	struct fs_objects objeto = leObjeto(st->tables);
 
