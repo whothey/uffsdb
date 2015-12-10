@@ -25,6 +25,9 @@ qr_select GLOBAL_SELECT;
 qr_filter *TEMP_FILTER;
 int       TEMP_FILTER_POSITION;
 
+/**
+ * Estrutura auxiliar do atual 'join'
+ */
 qr_join   *TEMP_JOIN;
 
 void connect(char *nome) {
@@ -690,10 +693,12 @@ int add_filter_to_join()
 
 int add_join_to_select()
 {
-  int join_index = GLOBAL_SELECT.njoins++;
+  int join_index;
   qr_join *aux;
 
   if (TEMP_JOIN == NULL) return 0;
+
+  join_index = GLOBAL_SELECT.njoins++;
 
   aux = (qr_join *)realloc(GLOBAL_SELECT.joins, sizeof(qr_join) * GLOBAL_SELECT.njoins);
 
