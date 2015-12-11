@@ -1,3 +1,6 @@
+#ifndef _UFFSDB_BUFFEND_
+#define _UFFSDB_BUFFEND_
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -610,3 +613,5 @@ double doubAbs(double n);
 int selectWhere(list_value *value);
 
 void doSelect(qr_select *st);
+
+#endif /* _UFFSDB_BUFFEND_ */
