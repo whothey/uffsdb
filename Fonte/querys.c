@@ -1,5 +1,6 @@
 #include "buffend.h"
-
+#include "tuple_operations.h"
+#include "join.h"
 
 
 int doOperation(const void * v1, const void * v2, char op, char type){ //Retorna 1 caso Verdadeiro
@@ -143,42 +144,6 @@ int selectWhere(list_value *value){
 		return 1;
 	}
 	return 2;
-}
-
-
-tp_table *montaCabecalho(qr_select *select)
-{
-  int i;
-  table    *temp_table  = iniciaTabela("temp_select");
-  tp_table *temp_schema = temp_table->esquema,
-           *p;
-
-  
-  if (select->projection[0][0] == '*') {
-    for (p = leSchema(leObjeto(select->tables)); p != NULL; p = p->next)
-      adicionaCampo(temp_table, p->nome, p->tipo, p->tam, p->chave, p->tabelaApt, p->attApt);
-
-    for (i = 0; i < select->njoins; i++) {
-      for (p = leSchema(leObjeto(select->joins[i].table)); p != NULL; p = p->next)
-	adicionaCampo(temp_table, p->nome, p->tipo, p->tam, p->chave, p->tabelaApt, p->attApt);
-    }
-  } else {
-    for (p = leSchema(leObjeto(select->tables)); p != NULL; p = p->next) {
-      for (i = 0; i < select->nprojection; i++) {
-	if (strcmp(p->nome, select->projection[i]))
-	  adicionaCampo(temp_table, p->nome, p->tipo, p->tam, p->chave, p->tabelaApt, p->attApt);
-      }
-    }
-
-    for (i = 0; i < select->njoins; i++) {
-      for (p = leSchema(leObjeto(select->joins[i].table)); p != NULL; p = p->next) {
-	if (strcmp(p->nome, select->projection[i]))
-	  adicionaCampo(temp_table, p->nome, p->tipo, p->tam, p->chave, p->tabelaApt, p->attApt);
-      }
-    }
-  }
-
-  return temp_schema;
 }
 
 /*readRegister();
