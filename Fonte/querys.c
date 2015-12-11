@@ -1,22 +1,6 @@
 #include "buffend.h"
 
-/* whatOp();
-Objetivo: Retornar o valor para cada operação.
-	1 - Caso seja sem JOIN sem WHERE
-	2 - Caso seja sem JOIN com WHERE
-	3 - Caso seja com JOIN sem WHERE
-	4 - Caso seja com JOIN com WHERE*/
-int whatOp(qr_select *st){
 
-	if(st->nfilters == 0){ //sem WHERE
-		if(st->njoins == 0) //sem JOIN
-			return 1; //sem JOIN sem WHERE
-		return 3; //com JOIN sem WHERE
-	}
-	if(st->njoins == 0) //sem JOIN
-		return 2; //sem JOIN com WHERE
-	return 4; //com JOIN com WHERE
-}
 
 int doOperation(const void * v1, const void * v2, char op, char type){ //Retorna 1 caso Verdadeiro
 
@@ -161,6 +145,235 @@ int selectWhere(list_value *value){
 	return 2;
 }
 
+
+tp_table *montaCabecalho(qr_select *select)
+{
+  int i;
+  table    *temp_table  = iniciaTabela("temp_select");
+  tp_table *temp_schema = temp_table->esquema,
+           *p;
+
+  
+  if (select->projection[0][0] == '*') {
+    for (p = leSchema(leObjeto(select->tables)); p != NULL; p = p->next)
+      adicionaCampo(temp_table, p->nome, p->tipo, p->tam, p->chave, p->tabelaApt, p->attApt);
+
+    for (i = 0; i < select->njoins; i++) {
+      for (p = leSchema(leObjeto(select->joins[i].table)); p != NULL; p = p->next)
+	adicionaCampo(temp_table, p->nome, p->tipo, p->tam, p->chave, p->tabelaApt, p->attApt);
+    }
+  } else {
+    for (p = leSchema(leObjeto(select->tables)); p != NULL; p = p->next) {
+      for (i = 0; i < select->nprojection; i++) {
+	if (strcmp(p->nome, select->projection[i]))
+	  adicionaCampo(temp_table, p->nome, p->tipo, p->tam, p->chave, p->tabelaApt, p->attApt);
+      }
+    }
+
+    for (i = 0; i < select->njoins; i++) {
+      for (p = leSchema(leObjeto(select->joins[i].table)); p != NULL; p = p->next) {
+	if (strcmp(p->nome, select->projection[i]))
+	  adicionaCampo(temp_table, p->nome, p->tipo, p->tam, p->chave, p->tabelaApt, p->attApt);
+      }
+    }
+  }
+
+  return temp_schema;
+}
+
+/*readRegister();
+Objetivo: Teoricamete irá ler o tripão, **linhas, e salvará os valores contidos lá
+numa variavel column, para então ler ela e preencher o list_value para fazer o WHERE.
+Retorno :	Column *Colunas	com todos os registros
+*colunas:	Colunas que conterão os valores
+**linhas:	A sequência de Char's contendo todos os bytes.
+n		:	Contador de quantas linhas existem. Tabelas envolvidas
+*campos : 	'Vetor' dos atributos das tabelas envolvidas, pois preciso do tamanho,nome, tipo do campo de cada tabela
+			Linha para cada Tabelas
+*qtdCampos:	'Vetor' que contém a quantidade de campos de cada tabela envolvida.
+
+double *d = (double *)&colunas[i].valorCampo[0];				  	   //Salvando o conteúdo da Coluna em DOUBLE
+int *i= (int *)&colunas[i].valorCampo[0];							  //Salvando o conteúdo da Coluna em INT
+
+
+*/
+
+column *readRegister(tp_table *campos, char **linhas, int n, int *qtdCampos){
+	column *colunas;
+	int i=0, sum=0,t=0,lin=0,colunasCol=0,atributos=0,count=0;
+	while(i < n)
+		sum += *(qtdCampos+i); //Somatorio de quantos atributos existem entre as tabelas envolvidas
+	i=0;
+	
+	colunas = (column *)malloc(sizeof(column) * sum+1); //Tantas colunas de acordo com a quantidade de registros das tabelas
+	memset(colunas, 0, sizeof(column)* n *strlen(linhas[0])); //Que??
+
+	//t P/ Coluna DE:    **linhas[lin][t]
+	//Lin P/ Linha da **linhas[lin] e campos[lin]    POIS se tratam da mesma tabela.
+	//Col P/ saber quando atingiu o limite de atributos daquela tabela, hora de ler outra tabela
+	//i P/ coluna[i] e campo[i], pois a ordem pode ser a mesma
+	
+	while(lin < n){		
+		colunas[i].valorCampo = (char *)malloc(sizeof(char)*campos[i].tam+1); //Aloca o tamanho do valor de acordo com o tamanho do registro
+		memset(colunas[i].valorCampo, '\0', campos[i].tam+1); //Seta em tudo '\0'.. acho que se der um erro de tamanho, já terá o \0 para ser o final.
+		
+		colunas[i].tipoCampo = campos[i].tipo;	//Guarda o tipo do campo.
+		strcpy(colunas[i].nomeCampo, campos[i].nome); //Guarda o nome do campo.
+		
+		while(count < campos[i].tam){
+			//Segundo setTupla, deve ser feito isso. :/
+			colunas[i].valorCampo[colunasCol++] = linhas[lin][t++]; //Será? Copiando os dados
+			count++;
+		}
+		colunas[i].valorCampo[colunasCol] = '\0';
+		i++;
+		atributos++;
+		colunasCol=0;
+		count=0;
+		
+		if(atributos >= *(qtdCampos+lin)){					//*(qtdCampos+x) para ter a quantidade de campos de cada Tabela, quando chegou no máximo, hora da outra tabela
+			lin++;
+			t=0;
+		}
+	}
+
+
+	return colunas;
+}
+
+
+
+
+int newDoWhere(qr_select *st, tp_table *campos){
+	
+	int ready=1; //position=st->nfilters-1;
+	//column *colunas = readRegister(campos, linhas, n, qtdCampos);													//Lendo os registros e salvando em *tuplas.											
+	
+	list_value *value = (list_value *) malloc(sizeof(list_value));						   //Lista de valores, usada no SELECT
+	value->next = (list_value *) malloc(sizeof(list_value));
+	list_value *tmp = value;
+	tmp->next = value->next;
+	//tmp->sname[0] = (char *)malloc(sizeof(char) * campos[n-1].tam * 10);									   //Alocando o espaço de acordo com o tamanho daquela tabela
+	//tmp->sname[1] = (char *)malloc(campos[n-1].tam * 10);
+	
+	
+	while(ready){
+		
+		
+		
+		
+		
+		
+		
+		
+		
+	}
+	
+		return 1;
+	
+}
+
+
+
+
+
+
+
+
+
+
+
+	
+	
+	
+	
+/*	
+
+
+void doSelect(qr_select *st){
+	int x, erro;	
+	struct fs_objects objeto = leObjeto(st->tables);
+
+    if(!verificaNomeTabela(st->tables)){ 												   //Verificação nome da Tabela
+        printf("\nERROR: relation \"%s\" was not found.\n\n\n", st->tables);
+        return;
+    }
+    tp_table *esquema = leSchema(objeto);
+    if(esquema == ERRO_ABRIR_ESQUEMA){													   //Se conseguiu criar o esquema?
+        printf("ERROR: schema cannot be created.\n");
+        free(esquema);
+        return;
+    }
+    tp_buffer *bufferpoll = initbuffer();												   //Bufferpool
+    if(bufferpoll == ERRO_DE_ALOCACAO){
+        free(bufferpoll);
+        free(esquema);
+        printf("ERROR: no memory available to allocate buffer.\n");
+        return;
+    }	
+	erro = SUCCESS;																		   //Coloca todas as tuplas daquela tabela no buffer
+    for(x = 0; erro == SUCCESS; x++)
+        erro = colocaTuplaBuffer(bufferpoll, x, esquema, objeto);
+   
+	int ntuplas = --x;
+	int op = whatOp(st);
+	switch(op){
+		//Caso sem JOIN sem WHERE. Ou seja, só imprimir.
+		case 1:
+			noJoinNoWhere(st, bufferpoll, &objeto, esquema, ntuplas);
+			break;
+		//Caso sem JOIN com WHERE
+		case 2:
+			int j=0,position=0,flag=1,primeiraTupla=1,m=0,n=0,registros,nvalidas=0,aux=0,full=0;
+			int *poAtt, *auxi=(int *)malloc(sizeof(int));
+			double *auxd = (double *)malloc(sizeof(double));									   //Vetores auxiliares para conversão do valor.
+			list_value *value = (list_value *) malloc(sizeof(list_value));						   //Lista de valores, usada no SELECT
+			value->next = (list_value *) malloc(sizeof(list_value));
+			list_value *tmp = value;
+			tmp->next = value->next;
+			tmp->sname[0] = (char *)malloc(esquema->tam * 10);									   //Alocando o espaço de acordo com o tamanho daquela tabela
+			tmp->sname[1] = (char *)malloc(esquema->tam * 10);
+			//'Vetor' que vai guardar todos os acessos a pagina. Para acessar de maneira direta.
+			poAtt = (int *)malloc(sizeof(int) *( objeto.qtdCampos * 2 )); 						   //No máximo terá o tamanho igual a quantidade de campos.		   
+		
+		
+			break;
+		//Caso com JOIN sem WHERE
+		case 3:
+		
+			break;
+		//Caso com JOIN com WHERE
+		case 4:
+		
+			break;
+		
+		
+		
+	}
+}
+
+
+
+
+
+
+ whatOp();
+Objetivo: Retornar o valor para cada operação.
+	1 - Caso seja sem JOIN sem WHERE
+	2 - Caso seja sem JOIN com WHERE
+	3 - Caso seja com JOIN sem WHERE
+	4 - Caso seja com JOIN com WHERE
+int whatOp(qr_select *st){
+
+	if(st->nfilters == 0){ //sem WHERE
+		if(st->njoins == 0) //sem JOIN
+			return 1; //sem JOIN sem WHERE
+		return 3; //com JOIN sem WHERE
+	}
+	if(st->njoins == 0) //sem JOIN
+		return 2; //sem JOIN com WHERE
+	return 4; //com JOIN com WHERE
+}
 void printCabecalho2(column *p, int x){
 	
 	if(p[x].tipoCampo == 'S')
@@ -306,107 +519,14 @@ void noJoinNoWhere(qr_select *st, tp_buffer *bufferpoll, struct fs_objects *obje
 	
 }
 
-tp_table *montaCabecalho(qr_select *select)
-{
-  int i;
-  table    *temp_table  = iniciaTabela("temp_select");
-  tp_table *temp_schema = temp_table->esquema,
-           *p;
 
-  
-  if (select->projection[0][0] == '*') {
-    for (p = leSchema(leObjeto(select->tables)); p != NULL; p = p->next)
-      adicionaCampo(temp_table, p->nome, p->tipo, p->tam, p->chave, p->tabelaApt, p->attApt);
 
-    for (i = 0; i < select->njoins; i++) {
-      for (p = leSchema(leObjeto(select->joins[i].table)); p != NULL; p = p->next)
-	adicionaCampo(temp_table, p->nome, p->tipo, p->tam, p->chave, p->tabelaApt, p->attApt);
-    }
-  } else {
-    for (p = leSchema(leObjeto(select->tables)); p != NULL; p = p->next) {
-      for (i = 0; i < select->nprojection; i++) {
-	if (strcmp(p->nome, select->projection[i]))
-	  adicionaCampo(temp_table, p->nome, p->tipo, p->tam, p->chave, p->tabelaApt, p->attApt);
-      }
-    }
 
-    for (i = 0; i < select->njoins; i++) {
-      for (p = leSchema(leObjeto(select->joins[i].table)); p != NULL; p = p->next) {
-	if (strcmp(p->nome, select->projection[i]))
-	  adicionaCampo(temp_table, p->nome, p->tipo, p->tam, p->chave, p->tabelaApt, p->attApt);
-      }
-    }
-  }
 
-  return temp_schema;
-}
 
-void doSelect(qr_select *st){
-	int x, erro;	
-	struct fs_objects objeto = leObjeto(st->tables);
 
-    if(!verificaNomeTabela(st->tables)){ 												   //Verificação nome da Tabela
-        printf("\nERROR: relation \"%s\" was not found.\n\n\n", st->tables);
-        return;
-    }
-    tp_table *esquema = leSchema(objeto);
-    if(esquema == ERRO_ABRIR_ESQUEMA){													   //Se conseguiu criar o esquema?
-        printf("ERROR: schema cannot be created.\n");
-        free(esquema);
-        return;
-    }
-    tp_buffer *bufferpoll = initbuffer();												   //Bufferpool
-    if(bufferpoll == ERRO_DE_ALOCACAO){
-        free(bufferpoll);
-        free(esquema);
-        printf("ERROR: no memory available to allocate buffer.\n");
-        return;
-    }	
-	erro = SUCCESS;																		   //Coloca todas as tuplas daquela tabela no buffer
-    for(x = 0; erro == SUCCESS; x++)
-        erro = colocaTuplaBuffer(bufferpoll, x, esquema, objeto);
-   
-	int ntuplas = --x;
-	int op = whatOp(st);
-	switch(op){
-		//Caso sem JOIN sem WHERE. Ou seja, só imprimir.
-		case 1:
-			noJoinNoWhere(st, bufferpoll, &objeto, esquema, ntuplas);
-			break;
-		//Caso sem JOIN com WHERE
-		case 2:
-			/*int j=0,position=0,flag=1,primeiraTupla=1,m=0,n=0,registros,nvalidas=0,aux=0,full=0;
-			int *poAtt, *auxi=(int *)malloc(sizeof(int));
-			double *auxd = (double *)malloc(sizeof(double));									   //Vetores auxiliares para conversão do valor.
-			list_value *value = (list_value *) malloc(sizeof(list_value));						   //Lista de valores, usada no SELECT
-			value->next = (list_value *) malloc(sizeof(list_value));
-			list_value *tmp = value;
-			tmp->next = value->next;
-			tmp->sname[0] = (char *)malloc(esquema->tam * 10);									   //Alocando o espaço de acordo com o tamanho daquela tabela
-			tmp->sname[1] = (char *)malloc(esquema->tam * 10);
-			//'Vetor' que vai guardar todos os acessos a pagina. Para acessar de maneira direta.
-			poAtt = (int *)malloc(sizeof(int) *( objeto.qtdCampos * 2 )); 						   //No máximo terá o tamanho igual a quantidade de campos.		   
-		*/
-		
-			break;
-		//Caso com JOIN sem WHERE
-		case 3:
-		
-			break;
-		//Caso com JOIN com WHERE
-		case 4:
-		
-			break;
-		
-		
-		
-	}
-}
-	
-	
-	
-	
-/*	
+
+
 	while(x){																			   //Vou começar a ler e salvar na struct *value
 																						   //Lê uma página p do buffer e salva na variavel *pagina
 		pagina = getPage(bufferpoll, esquema, objeto, p);
