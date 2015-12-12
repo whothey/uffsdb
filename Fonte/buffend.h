@@ -610,8 +610,38 @@ double doubAbs(double n);
 * Retorna o valor absoluto de uma variável double;
 */
 
-int selectWhere(list_value *value);
+column *readRegister(tp_table *campos, char **linhas, int n, int *qtdCampos);
 
-void doSelect(qr_select *st);
+/*readRegister();
+Objetivo: Teoricamete irá ler o tripão, **linhas, e salvará os valores contidos lá
+numa variavel column, para então ler ela e preencher o list_value para fazer o WHERE.
+Retorno :	Column *Colunas	com todos os registros
+*colunas:	Colunas que conterão os valores
+**linhas:	A sequência de Char's contendo todos os bytes.
+n		:	Contador de quantas linhas existem. Tabelas envolvidas
+*campos : 	'Vetor' dos atributos das tabelas envolvidas, pois preciso do tamanho,nome, tipo do campo de cada tabela
+			Linha para cada Tabelas
+*qtdCampos:	'Vetor' que contém a quantidade de campos de cada tabela envolvida.
+*/
+
+list_value *readyWhere(qr_select *st, column *colunas);
+
+/*readyWhere();
+Objetivo: Deixar o where pronto, e excutá-lo.
+*st		:	Ponteiro do select, para ter a Lista de Filtros
+*colunas:	As colunas já definidas, com os atributos...
+*/
+
+int doWhere(list_value *value);
+
+/*doWhere();
+Objetivo: Fazer o Where.
+*value:		Determinada lista para excução do Where.
+Retorno:
+2	Erro
+1	tupla Válida
+0	tupla Inválida
+*/
+
 
 #endif /* _UFFSDB_BUFFEND_ */
