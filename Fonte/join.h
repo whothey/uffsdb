@@ -30,6 +30,7 @@ void resetJoinIndexes(tp_join *joins);
 /**
  * JOIN uma tupla específica com a próxima iteração de JOINS definido
  * em *join_data.
+ * ESTA FUNÇÃO NÃO VERIFICA SE A TUPLA SATISFAZ A OPERAÇÃO DE JOIN!
  * Um schema-resultado deve ser informado para a operação.
  */
 char *joinNext(char *tuple, tp_join *join_data, tp_table *completeSchema);

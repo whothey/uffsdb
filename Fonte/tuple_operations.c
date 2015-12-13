@@ -21,7 +21,7 @@ int schema_row_bytesize(tp_table *schema)
   return size;
 }
 
-tp_table *createFullSchema(qr_select *select)
+tp_table *createSelectSchema(qr_select *select)
 {
   int i;
   table    *temp_table  = iniciaTabela("temp_select");
@@ -30,13 +30,9 @@ tp_table *createFullSchema(qr_select *select)
 
   
   if (select->projection[0][0] == '*') {
-    for (p = leSchema(leObjeto(select->tables)); p != NULL; p = p->next)
-      adicionaCampo(temp_table, p->nome, p->tipo, p->tam, p->chave, p->tabelaApt, p->attApt);
-
-    for (i = 0; i < select->njoins; i++) {
-      for (p = leSchema(leObjeto(select->joins[i].table)); p != NULL; p = p->next)
-	adicionaCampo(temp_table, p->nome, p->tipo, p->tam, p->chave, p->tabelaApt, p->attApt);
-    }
+    free(temp_table);
+    
+    return createFullSchema(select);
   } else {
     for (p = leSchema(leObjeto(select->tables)); p != NULL; p = p->next) {
       for (i = 0; i < select->nprojection; i++) {
@@ -57,6 +53,28 @@ tp_table *createFullSchema(qr_select *select)
 
   return temp_schema;
 }
+
+tp_table *createFullSchema(qr_select *select)
+{
+  int i;
+  table    *temp_table  = iniciaTabela("temp_select");
+  tp_table *temp_schema = temp_table->esquema,
+           *p;
+
+ 
+  for (p = leSchema(leObjeto(select->tables)); p != NULL; p = p->next)
+    adicionaCampo(temp_table, p->nome, p->tipo, p->tam, p->chave, p->tabelaApt, p->attApt);
+  
+  for (i = 0; i < select->njoins; i++) {
+    for (p = leSchema(leObjeto(select->joins[i].table)); p != NULL; p = p->next)
+      adicionaCampo(temp_table, p->nome, p->tipo, p->tam, p->chave, p->tabelaApt, p->attApt);
+  }
+
+  free(temp_table);
+
+  return temp_schema;
+}
+
 
 column *composeTuple(char *tuple, tp_table *schema)
 {

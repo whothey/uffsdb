@@ -36,6 +36,7 @@ void connect(char *nome) {
 
         connected.conn_active = 1;
         printf("You are now connected to database \"%s\" as user \"Ibetres\".\n", nome);
+	GLOBAL_SELECT.nprojection = 0;
     } else {
     	printf("ERROR: Failed to establish connection with database named \"%s\". (Error code: %d)\n", nome, r);
     }
@@ -278,8 +279,8 @@ int interface() {
                         case OP_SELECT_ALL:
 			  // imprime(GLOBAL_DATA.objName);
 			  dump_select();
-			  // doSelect(&GLOBAL_SELECT);
-                            break;
+			  startQuery(GLOBAL_SELECT);
+			  break;
                         case OP_CREATE_TABLE:
                             createTable(&GLOBAL_DATA);
                             break;

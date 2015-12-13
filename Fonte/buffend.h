@@ -643,5 +643,7 @@ Retorno:
 0	tupla Inválida
 */
 
+void startQuery(qr_select select);
+
 
 #endif /* _UFFSDB_BUFFEND_ */

@@ -109,10 +109,5 @@ char *joinNext(char *tuple, tp_join *join_data, tp_table *completeSchema)
     }
   }
 
-  // Ok, finalizamos a iteração, temos uma tupla com o próximo
-  // registro válido para teste se a tupla atual satisfaz a condição
-  // de JOIN.
-  
-  composeTuple(newTuple, completeSchema);
-  return NULL;
+  return newTuple;
 }

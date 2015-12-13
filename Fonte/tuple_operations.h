@@ -19,15 +19,16 @@ int schema_column_count(tp_table *schema);
 int schema_row_bytesize(tp_table *schema);
 
 /**
- * Verifica se a tupla informada atende uma condição de qr_filter
- */
-int tupleIsValid(char *data, tp_table *schema, qr_filter *condition);
-
-/**
  * Cria o Schema (tp_table) á artir de um qr_select, onde este
  * "concatenará" os esquemas de todos as tabelas envolvidas neste
  * select, iniciando pela OUTER TABLE (from), e preenchendo
  * sequencialmente com as tabelas dos JOINs
+ */
+tp_table *createSelectSchema(qr_select *select);
+
+/**
+ * O mesmo que createSelectSchema, porém sempre considera que a
+ * projeção informada é '*'
  */
 tp_table *createFullSchema(qr_select *select);
 
