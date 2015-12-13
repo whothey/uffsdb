@@ -192,7 +192,7 @@ column *readRegister(tp_table *campos, char **linhas, int n, int *qtdCampos){
 }
 
 
-int readyWhere(qr_select *st, column *colunas){
+list_value *readyWhere(qr_select *st, column *colunas){
 	
 	int position=st->nfilters-1,i=0,*auxi=(int *)malloc(sizeof(int)),flag=0,full=0;
 	double *auxd = (double *)malloc(sizeof(double));
@@ -332,40 +332,3 @@ int readyWhere(qr_select *st, column *colunas){
 
 	return value;	
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
