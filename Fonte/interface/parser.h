@@ -1,9 +1,14 @@
+#include <stdlib.h>
+#include <pthread.h>
+#include "../buffend.h"
+#include <string.h>
+
 /* FUNÇÕES AUXILIARES DO INTERPRETADOR DE COMANDOS (yacc + lex)
  * O yacc vai chamando essas funções conforme vai identificando os tokens.
  * Essas funcções irão preencher uma estrutura, ou parte dela, e chamarão
  * as funções do banco de dados para executar as operações.
  */
-#define OP_INSERT 			1
+#define OP_INSERT 		1
 #define OP_CREATE_TABLE 	2
 #define OP_DROP_TABLE 		3
 #define OP_CREATE_DATABASE 	4

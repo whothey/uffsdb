@@ -1,8 +1,4 @@
-#include <stdlib.h>
-#include <pthread.h>
-#include "../buffend.h"
 #include "parser.h"
-#include <string.h>
 
 
 /* Estrutura global que guarda as informações obtidas pelo yacc
@@ -282,7 +278,7 @@ int interface() {
                         case OP_SELECT_ALL:
 			  // imprime(GLOBAL_DATA.objName);
 			  dump_select();
-			  doSelect(&GLOBAL_SELECT);
+			  // doSelect(&GLOBAL_SELECT);
                             break;
                         case OP_CREATE_TABLE:
                             createTable(&GLOBAL_DATA);
