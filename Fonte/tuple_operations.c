@@ -87,3 +87,47 @@ column *composeTuple(char *tuple, tp_table *schema)
     
   return columns;
 }
+
+list_value *columnListValues(column* data, qr_filter *condition)
+{
+  list_value *value;
+  column *c;
+  int *auxi;
+  double *auxd;
+
+  value = malloc(sizeof(list_value));
+
+  if (value == NULL) return NULL;
+
+  if (condition->left_type == 'V') {
+    if(condition->typeAtt == 'C') {
+      value->sname[0] = (char *)malloc(sizeof(char) * (strlen(condition->left) + 1));
+      strcpy(value->sname[0], condition->left);
+      value->typeValue = 'C';      
+    } else if (condition->typeAtt == 'D') {
+      value->dvalue[0] = atof(condition->left);
+      value->typeValue = 'D';
+    } else if (condition->typeAtt == 'I') {
+      value->ivalue[0] = atoi(condition->left);
+      value->typeValue = 'I';
+    }
+  } else { // Será considerado como coluna
+    for (c = data; c != NULL; c = c->next) {      
+      if (c->tipoCampo == 'C' || c->tipoCampo == 'S') {
+	value->sname[0] = (char *)malloc(sizeof(char) * strlen(c->valorCampo)+1);
+	strcpy(value->sname[0], c->valorCampo);
+	value->typeValue = 'C';
+      } else if(c->tipoCampo == 'D') {
+	auxd = (double *)&c->valorCampo[0];
+	value->dvalue[0] = *auxd;
+	value->typeValue = 'D';
+      } else if (c->tipoCampo == 'I') {
+	auxi = (int *)&c->valorCampo[0];
+	value->ivalue[0] = *auxi;
+	value->typeValue = 'I';
+      }
+    }
+  }
+
+  return value;
+}

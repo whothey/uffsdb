@@ -31,10 +31,15 @@ int tupleIsValid(char *data, tp_table *schema, qr_filter *condition);
  */
 tp_table *createFullSchema(qr_select *select);
 
-/** 
+/**
  * Transforma uma tupla (data), baseado em um schema em um
- * encadeamento de estruturas *column
+ * encadeamento de estruturas *column;
  */
 column *composeTuple(char *tuple, tp_table *schema);
+
+/**
+ * Cria *list_values para comparação de estruturas column
+ */
+list_value *columnListValues(column* data, qr_filter *condition);
 
 #endif /* _UFFSDB_TUPLEOP_ */

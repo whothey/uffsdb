@@ -13,6 +13,7 @@ typedef struct _join_data {
   int        current_index;
   struct fs_objects object;
   struct _join_data *next;
+  struct _join_data *prev;
 } tp_join;
 
 /**
