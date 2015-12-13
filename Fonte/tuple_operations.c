@@ -97,15 +97,14 @@ column *composeTuple(char *tuple, tp_table *schema)
 
     fieldIterator = 0;
     while (fieldIterator < p->tam) {
-      printf("fieldIterator: %d\n", fieldIterator);
-      printf("tupleIterator: %d\n", tupleIterator);
-      printf("p->tam: %d\n", p->tam);
+     // printf("fieldIterator: %d\n", fieldIterator);
+      //printf("tupleIterator: %d\n", tupleIterator);
+      //printf("p->tam: %d\n", p->tam);
       
       c->valorCampo[fieldIterator] = tuple[tupleIterator];
       tupleIterator++;
       fieldIterator++;
     }
-
     if (p->next != NULL) {
       columns->next = malloc(sizeof(column));
       c = columns->next; 
@@ -119,14 +118,15 @@ list_value *columnListValues(column* data, qr_filter *condition)
 {
   list_value *value;
   column *c;
-  int *auxi;
-  double *auxd;
+  int *auxi=(int *)malloc(sizeof(int)),i=0;
+  double *auxd=(double *)malloc(sizeof(double));
 
   value = malloc(sizeof(list_value));
 
   if (value == NULL) return NULL;
 
   if (condition->left_type == 'V') {
+	i++;
     if(condition->typeAtt == 'C') {
       value->sname[0] = (char *)malloc(sizeof(char) * (strlen(condition->left) + 1));
       strcpy(value->sname[0], condition->left);
@@ -139,22 +139,28 @@ list_value *columnListValues(column* data, qr_filter *condition)
       value->typeValue = 'I';
     }
   } else { // Será considerado como coluna
-    for (c = data; c != NULL; c = c->next) {
+    for (c = data; c != NULL; c = c->next,i++) {
       if (c->tipoCampo == 'C' || c->tipoCampo == 'S') {
-	value->sname[0] = (char *)malloc(sizeof(char) * strlen(c->valorCampo)+1);
-	strcpy(value->sname[0], c->valorCampo);
+	value->sname[i] = (char *)malloc(sizeof(char) * strlen(c->valorCampo)+1);
+	strcpy(value->sname[i], c->valorCampo);
+	printf("ValueC: %s\n\n",value->sname[i]);
 	value->typeValue = 'C';
       } else if(c->tipoCampo == 'D') {
 	auxd = (double *)&c->valorCampo[0];
-	value->dvalue[0] = *auxd;
+	value->dvalue[i] = *auxd;
 	value->typeValue = 'D';
       } else if (c->tipoCampo == 'I') {
 	auxi = (int *)&c->valorCampo[0];
-	value->ivalue[0] = *auxi;
+	printf("Value: %d\n\n",*auxi);
+	value->ivalue[i] = *auxi;
 	value->typeValue = 'I';
       }
     }
   }
+
+	value->typeOp = '=';
+	value->typeLogic = 'N';
+	value->typeValue = 'I';
 
   return value;
 }
