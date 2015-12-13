@@ -58,18 +58,20 @@ tp_table *createFullSchema(qr_select *select)
 {
   int i;
   table    *temp_table  = iniciaTabela("temp_select");
-  tp_table *temp_schema = temp_table->esquema,
+  tp_table *temp_schema = NULL,
            *p;
 
  
-  for (p = leSchema(leObjeto(select->tables)); p != NULL; p = p->next)
+  for (p = leSchema(leObjeto(select->tables)); p != NULL; p = p->next) 
     adicionaCampo(temp_table, p->nome, p->tipo, p->tam, p->chave, p->tabelaApt, p->attApt);
   
   for (i = 0; i < select->njoins; i++) {
     for (p = leSchema(leObjeto(select->joins[i].table)); p != NULL; p = p->next)
       adicionaCampo(temp_table, p->nome, p->tipo, p->tam, p->chave, p->tabelaApt, p->attApt);
   }
-
+  
+  temp_schema = temp_table->esquema;
+  
   free(temp_table);
 
   return temp_schema;
@@ -89,20 +91,27 @@ column *composeTuple(char *tuple, tp_table *schema)
   for (p = schema, c = columns; p != NULL; p = p->next) {
     c->tipoCampo  = p->tipo;
     strcpy(c->nomeCampo, p->nome);
-    c->valorCampo = malloc(sizeof(char) * p->tam);
+    c->valorCampo = malloc(sizeof(char) * (p->tam + 1));
 
-    memset(c->valorCampo, '\0', p->tam);
+    memset(c->valorCampo, '\0', p->tam + 1);
 
     fieldIterator = 0;
-    while (fieldIterator <= p->tam)
-      c->valorCampo[fieldIterator++] = tuple[tupleIterator++];
+    while (fieldIterator < p->tam) {
+      printf("fieldIterator: %d\n", fieldIterator);
+      printf("tupleIterator: %d\n", tupleIterator);
+      printf("p->tam: %d\n", p->tam);
+      
+      c->valorCampo[fieldIterator] = tuple[tupleIterator];
+      tupleIterator++;
+      fieldIterator++;
+    }
 
     if (p->next != NULL) {
       columns->next = malloc(sizeof(column));
       c = columns->next; 
     }
   }
-    
+  
   return columns;
 }
 
@@ -130,7 +139,7 @@ list_value *columnListValues(column* data, qr_filter *condition)
       value->typeValue = 'I';
     }
   } else { // Será considerado como coluna
-    for (c = data; c != NULL; c = c->next) {      
+    for (c = data; c != NULL; c = c->next) {
       if (c->tipoCampo == 'C' || c->tipoCampo == 'S') {
 	value->sname[0] = (char *)malloc(sizeof(char) * strlen(c->valorCampo)+1);
 	strcpy(value->sname[0], c->valorCampo);

@@ -104,7 +104,7 @@ char *joinNext(char *tuple, tp_join *join_data, tp_table *completeSchema)
       newTuple = test;
 
       // Concatena com os dados obtidos
-      for (i = 0; i <= subjectSize; i++)
+      for (i = 0; i < subjectSize; i++)
 	newTuple[tupleIndex++] = subject[i++];
     }
   }

@@ -338,7 +338,7 @@ void startQuery(qr_select select)
   tp_join           *join_data;
   struct fs_objects  outerTableObject;
   tp_table          *outerTableSchema, *fullJoinSchema;
-  int outerTableTupleSize, i, tupleIsValid;
+  int outerTableTupleSize, i, j, tupleIsValid;
   char *tupleData, *tupleResult;
   column *joinColumnData;
   list_value *temp_listvalue;
@@ -373,8 +373,11 @@ void startQuery(qr_select select)
       tupleIsValid   = 1;
       tupleData      = getTupla(outerTableSchema, outerTableObject, outerTableTupleSize * i);
       fullJoinSchema = createFullSchema(&select);
+      printf("FullJoinSchema: \n");
+      dump_schema(fullJoinSchema);
       
       tupleResult = joinNext(tupleData, join_data, fullJoinSchema);
+      printf("tuple result: %s\n", tupleResult);
 
       // Ok, temos uma tupla com o próximo registro válido para testar
       // se a tupla atual satisfaz a condição de JOIN.
@@ -382,7 +385,9 @@ void startQuery(qr_select select)
       // Então passamos a tupla resultante para a forma de estruturas
       // 'column', que torna mais fácil a identificação e comparação
       // de cada valor
-      joinColumnData = composeTuple(tupleResult, completeSchema);
+      joinColumnData = composeTuple(tupleResult, fullJoinSchema);
+
+      dump_columns(joinColumnData);
 
       // Transformamos em uma estrutura genérica de comparação de
       // dados, como cada JOIN possui uma comparação, iteramos por
@@ -391,7 +396,8 @@ void startQuery(qr_select select)
 	temp_listvalue = columnListValues(joinColumnData, select.joins[j].condition);
 
 	// Se a comparação retornou falso, a tupla já não é válida
-	if (doOperation(temp_listvalue) == 0) {
+	if (doWhere(temp_listvalue) == 0) {
+	  printf("tuple is invalid!");
 	  tupleIsValid = 0;
 	  break;
 	}
@@ -404,9 +410,6 @@ void startQuery(qr_select select)
 	free(joinColumnData);
 	free(temp_listvalue);
       }
-      
-      
-      printf("RESULT: %s\n\n", tupleResult);
     }
   }
 }
