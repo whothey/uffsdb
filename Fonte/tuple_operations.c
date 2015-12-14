@@ -91,6 +91,7 @@ column *composeTuple(char *tuple, tp_table *schema)
   for (p = schema, c = columns; p != NULL; p = p->next) {
     c->tipoCampo  = p->tipo;
     strcpy(c->nomeCampo, p->nome);
+    printf("CAMPO ATUAL: %s\n", c->nomeCampo);
     c->valorCampo = malloc(sizeof(char) * p->tam);
 
     memset(c->valorCampo, '\0', p->tam);
@@ -101,7 +102,7 @@ column *composeTuple(char *tuple, tp_table *schema)
       printf("tupleIterator: %d\n", tupleIterator);
       printf("p->tam: %d\n", p->tam);
 
-      printf("tupledata: %c\n", tuple[tupleIterator]);
+      printf("tupledata[%d]: %c\n", tupleIterator, tuple[tupleIterator]);
       
       c->valorCampo[fieldIterator] = tuple[tupleIterator];
       tupleIterator++;
@@ -109,8 +110,10 @@ column *composeTuple(char *tuple, tp_table *schema)
     }
     
     if (p->next != NULL) {
-      columns->next = malloc(sizeof(column));
-      c = columns->next; 
+      c->next = malloc(sizeof(column));
+      c = c->next;
+    } else {
+      c->next = NULL;
     }
   }
   

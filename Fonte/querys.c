@@ -341,10 +341,10 @@ void startQuery(qr_select select)
   tp_join           *join_data;
   struct fs_objects  outerTableObject;
   tp_table          *outerTableSchema, *fullJoinSchema;
-  int i, j, tupleIsValid;
-  char *tupleData, *tupleResult;
-  column *joinColumnData;
-  list_value *temp_listvalue;
+  int                i, j, tupleIsValid;
+  char              *tupleData, *tupleResult;
+  column            *joinColumnData;
+  list_value        *temp_listvalue;
 
   // Verificamos se todas as tabelas existem
   // TODO: Verificar tabelas do JOIN
@@ -376,7 +376,9 @@ void startQuery(qr_select select)
       // printf("FullJoinSchema: \n");
       // dump_schema(fullJoinSchema);
       while (tupleResult != NULL) {
-	tupleResult = joinNext(tupleData, join_data, fullJoinSchema);
+	tupleResult = joinNext(tupleData, schema_row_bytesize(outerTableSchema), join_data, fullJoinSchema);
+
+	printf("tupleres: %s\n", tupleResult);
 
 	// Ok, temos uma tupla com o próximo registro válido para testar
 	// se a tupla atual satisfaz a condição de JOIN.

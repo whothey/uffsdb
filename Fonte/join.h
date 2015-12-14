@@ -33,6 +33,6 @@ void resetJoinIndexes(tp_join *joins);
  * ESTA FUNÇÃO NÃO VERIFICA SE A TUPLA SATISFAZ A OPERAÇÃO DE JOIN!
  * Um schema-resultado deve ser informado para a operação.
  */
-char *joinNext(char *tuple, tp_join *join_data, tp_table *completeSchema);
+char *joinNext(char *tuple, int tupleSize, tp_join *join_data, tp_table *completeSchema);
 
 #endif /* _UFFSDB_JOIN_ */
