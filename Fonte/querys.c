@@ -203,13 +203,14 @@ list_value *readyWhere(qr_select *st, column *colunas){
 	value->next = (list_value *) malloc(sizeof(list_value));
 	list_value *tmp = value;
 	tmp->next = value->next;
-	
+
 	while(position >= 0){
 		
 		if(full == 0){																									//Full=0. Preciso primeiro preencher o atributo da esquerda.
 			if(st->filters[position].left_type == 'V'){																	//Caso seja um valor
 				full++;																									//Achei o valor, devo ir para o atributo da direita agora
-				flag=1;																									//Flag faz a busca voltar ao primeiro att.
+				flag=1;	
+																												//Flag faz a busca voltar ao primeiro att.
 				if(st->filters[position].typeAtt == 'C'){																//Caso seja CHAR
 
 					tmp->sname[0] = (char *)malloc(sizeof(char) * strlen(st->filters[position].left+1));				//Alcando o comprimento do nome +1
@@ -254,6 +255,7 @@ list_value *readyWhere(qr_select *st, column *colunas){
 					tmp->typeValue = 'I';
 				}
 			}
+		
 
 		}//if( full=0 )
 
@@ -266,7 +268,6 @@ list_value *readyWhere(qr_select *st, column *colunas){
 					tmp->sname[1] = (char *)malloc(sizeof(char) * strlen(st->filters[position].right+1));				//Alcando o comprimento do nome +1
 					strcpy(tmp->sname[1], st->filters[position].right);
 					tmp->typeValue = 'C';
-
 				}
 				else if(st->filters[position].typeAtt == 'D'){															//Caso Double
 
@@ -319,7 +320,6 @@ list_value *readyWhere(qr_select *st, column *colunas){
 					tmp->typeLogic = st->filters[position-1].typeLogico;
 					tmp = tmp->next;
 					tmp->next = (list_value *)malloc(sizeof(list_value));
-				        c = c->next;
 
 				}
 				full=0;
@@ -331,6 +331,7 @@ list_value *readyWhere(qr_select *st, column *colunas){
 			i=-1;
 		}
 		i++;
+		c = c->next;
 	}//while();
 	
 
@@ -432,7 +433,10 @@ void startQuery(qr_select select)
 
       if (doWhere(temp_listvalue) == 1) {
         storeInBuffer(tupleData, tamTupla(outerTableSchema, outerTableObject), buffer);
+		printf("Valido\n");
       }
+		else
+			printf("Invalido\n");
     }
   }
 }
