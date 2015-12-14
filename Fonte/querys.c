@@ -373,10 +373,9 @@ void startQuery(qr_select select)
       tupleIsValid   = 1;
       tupleData      = getTupla(outerTableSchema, outerTableObject, i);
       fullJoinSchema = createFullSchema(&select);
-      
-      while (tupleResult != NULL) {
-	tupleResult = joinNext(tupleData, schema_row_bytesize(outerTableSchema), join_data, fullJoinSchema);
 
+      while (tupleResult != NULL) {
+		tupleResult = joinNext(tupleData, schema_row_bytesize(outerTableSchema), join_data, fullJoinSchema);
 	// Se o resultado da tupla for NULL, chegamos ao final do
 	// JOIN.
 	if (tupleResult == NULL) break;
@@ -400,6 +399,8 @@ void startQuery(qr_select select)
 	    tupleIsValid = 0;
 	    break;
 	  }
+	else
+		printf("Valido\n");
 	}
 
 	if (!tupleIsValid) {

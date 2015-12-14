@@ -114,7 +114,7 @@ list_value *columnListValues(column* data, qr_filter *condition)
 {
   list_value *value;
   column *c = data;
-  int *auxi=(int *)malloc(sizeof(int)),i=0;
+  int *auxi=(int *)malloc(sizeof(int)),i=0,lookingCurrentAtt=1;
   double *auxd=(double *)malloc(sizeof(double));
 
   value = malloc(sizeof(list_value));
@@ -138,25 +138,33 @@ list_value *columnListValues(column* data, qr_filter *condition)
 				i++;
 			}
 			else{
-				if (c->tipoCampo == 'C' || c->tipoCampo == 'S') {
-					value->sname[0] = (char *)malloc(sizeof(char) * strlen(c->valorCampo)+1);
-					strcpy(value->sname[0], c->valorCampo);
-					value->typeValue = 'C';
+				while(lookingCurrentAtt){
+				if(strcmp(c->nomeCampo, condition->left) == 0){
+					if (c->tipoCampo == 'C' || c->tipoCampo == 'S') {
+						value->sname[0] = (char *)malloc(sizeof(char) * strlen(c->valorCampo)+1);
+						strcpy(value->sname[0], c->valorCampo);
+						value->typeValue = 'C';
 
-				}else if (c->tipoCampo == 'I') {
-					auxi = (int *)&c->valorCampo[0];					
-					value->ivalue[0] = *auxi;
-					printf("Value0: %d\n",value->ivalue[0]);
-					value->typeValue = 'I';
-				
-				}else if(c->tipoCampo == 'D') {
-					auxd = (double *)&c->valorCampo[0];
-					value->dvalue[0] = *auxd;
-					value->typeValue = 'D';
-				
-				}	  
-				i++;
-				c = c->next;
+					}else if (c->tipoCampo == 'I') {
+						auxi = (int *)&c->valorCampo[0];					
+						value->ivalue[0] = *auxi;
+						printf("Value0: %d\n",value->ivalue[0]);
+						value->typeValue = 'I';
+			
+					}else if(c->tipoCampo == 'D') {
+						auxd = (double *)&c->valorCampo[0];
+						value->dvalue[0] = *auxd;
+						value->typeValue = 'D';
+			
+					}
+					i++;
+					lookingCurrentAtt=0;
+				}
+				c = c->next;	
+			}
+			c = data;
+			lookingCurrentAtt=1;
+			
 			}
 
 			}
@@ -176,25 +184,32 @@ list_value *columnListValues(column* data, qr_filter *condition)
 				i++;
 			}
 			else{
-				if (c->tipoCampo == 'C' || c->tipoCampo == 'S') {
-					value->sname[1] = (char *)malloc(sizeof(char) * strlen(c->valorCampo)+1);
-					strcpy(value->sname[1], c->valorCampo);
+				while(lookingCurrentAtt){
+					if(strcmp(c->nomeCampo, condition->right) == 0){
+						if (c->tipoCampo == 'C' || c->tipoCampo == 'S') {
+							value->sname[1] = (char *)malloc(sizeof(char) * strlen(c->valorCampo)+1);
+							strcpy(value->sname[1], c->valorCampo);
 
-				}else if (c->tipoCampo == 'I') {
-					auxi = (int *)&c->valorCampo[0];
-					value->ivalue[1] = *auxi;
-					printf("Value1: %d\n",value->ivalue[1]);
+						}else if (c->tipoCampo == 'I') {
+							auxi = (int *)&c->valorCampo[0];
+							value->ivalue[1] = *auxi;
+							printf("Value1: %d\n",value->ivalue[1]);
 				
-				}else if(c->tipoCampo == 'D') {
-					auxd = (double *)&c->valorCampo[0];
-					value->dvalue[1] = *auxd;
+						}else if(c->tipoCampo == 'D') {
+							auxd = (double *)&c->valorCampo[0];
+							value->dvalue[1] = *auxd;
 				
-				}	  
-				i++;
-				c = c->next;
-			}
+						}	  
+						i++;
+						lookingCurrentAtt = 0;	
+					}
+					c = c->next;
+				}
+			c = data;
+			lookingCurrentAtt = 1;
+		   }
 		}
-  }
+	}
 	value->typeOp = condition->typeOp;
 	value->typeLogic = 'N';
 	value->next = NULL;
