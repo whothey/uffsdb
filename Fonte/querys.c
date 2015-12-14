@@ -373,12 +373,13 @@ void startQuery(qr_select select)
       tupleIsValid   = 1;
       tupleData      = getTupla(outerTableSchema, outerTableObject, i);
       fullJoinSchema = createFullSchema(&select);
-      // printf("FullJoinSchema: \n");
-      // dump_schema(fullJoinSchema);
+      
       while (tupleResult != NULL) {
 	tupleResult = joinNext(tupleData, schema_row_bytesize(outerTableSchema), join_data, fullJoinSchema);
 
-	printf("tupleres: %s\n", tupleResult);
+	// Se o resultado da tupla for NULL, chegamos ao final do
+	// JOIN.
+	if (tupleResult == NULL) break;
 
 	// Ok, temos uma tupla com o próximo registro válido para testar
 	// se a tupla atual satisfaz a condição de JOIN.
@@ -387,8 +388,6 @@ void startQuery(qr_select select)
 	// 'column', que torna mais fácil a identificação e comparação
 	// de cada valor
 	joinColumnData = composeTuple(tupleResult, fullJoinSchema);
-
-	dump_columns(joinColumnData);
 
 	// Transformamos em uma estrutura genérica de comparação de
 	// dados, como cada JOIN possui uma comparação, iteramos por
