@@ -398,13 +398,21 @@ void startQuery(qr_select select)
 
 	  // Se a comparação retornou falso, a tupla já não é válida
 	  if (doWhere(temp_listvalue) == 0) {
+		printf("Invalido\n");
 	    tupleIsValid = 0;
 	    break;
 	  }
-	else
+	else if(select.nfilters > 0){ //Sinal que existe WHERE
+		if(doWhere(readyWhere(&select, joinColumnData))){
+			printf("Valido\n");
+			tupleIsValid=1;
+		}
+		else
+			printf("Invalido\n");
+		}
+	else //Não tem WHERE e segundo o JOIN é válida
 		printf("Valido\n");
 	}
-
 	if (!tupleIsValid) {
 	  free(tupleData);
 	  free(fullJoinSchema);
