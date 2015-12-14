@@ -162,7 +162,7 @@ list_value *columnListValues(column* data, qr_filter *condition)
 				}
 				c = c->next;	
 			}
-			c = data;
+			//c = data;
 			lookingCurrentAtt=1;
 			
 			}
@@ -205,7 +205,7 @@ list_value *columnListValues(column* data, qr_filter *condition)
 					}
 					c = c->next;
 				}
-			c = data;
+			//c = data;
 			lookingCurrentAtt = 1;
 		   }
 		}
