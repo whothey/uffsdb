@@ -341,7 +341,7 @@ void startQuery(qr_select select)
   tp_join           *join_data;
   struct fs_objects  outerTableObject;
   tp_table          *outerTableSchema, *fullJoinSchema;
-  int outerTableTupleSize, i, j, tupleIsValid;
+  int i, j, tupleIsValid;
   char *tupleData, *tupleResult;
   column *joinColumnData;
   list_value *temp_listvalue;
@@ -364,9 +364,6 @@ void startQuery(qr_select select)
     fprintf(stderr, "ERROR: Could not open %s schema!\n", select.tables);
   }
 
-  // Tamanho da tupla da tabela principal
-  outerTableTupleSize = tamTupla(outerTableSchema, outerTableObject);
-
   // SELECT * FROM abacate JOIN mamao ON abacate.id = mamao.id;
   if (select.njoins > 0) {
     join_data = composeJoinData(select.joins, select.njoins);
@@ -374,43 +371,43 @@ void startQuery(qr_select select)
     // Itera pela tabela principal
     for (i = 0; tupleData != ERRO_DE_LEITURA; i++) {
       tupleIsValid   = 1;
-      tupleData      = getTupla(outerTableSchema, outerTableObject, outerTableTupleSize * i);
+      tupleData      = getTupla(outerTableSchema, outerTableObject, i);
       fullJoinSchema = createFullSchema(&select);
-      printf("FullJoinSchema: \n");
-      dump_schema(fullJoinSchema);
-      tupleResult = joinNext(tupleData, join_data, fullJoinSchema);
-      printf("tuple result: %s\n", tupleResult);
+      // printf("FullJoinSchema: \n");
+      // dump_schema(fullJoinSchema);
+      while (tupleResult != NULL) {
+	tupleResult = joinNext(tupleData, join_data, fullJoinSchema);
 
-      // Ok, temos uma tupla com o próximo registro válido para testar
-      // se a tupla atual satisfaz a condição de JOIN.
+	// Ok, temos uma tupla com o próximo registro válido para testar
+	// se a tupla atual satisfaz a condição de JOIN.
 
-      // Então passamos a tupla resultante para a forma de estruturas
-      // 'column', que torna mais fácil a identificação e comparação
-      // de cada valor
-      joinColumnData = composeTuple(tupleResult, fullJoinSchema);
+	// Então passamos a tupla resultante para a forma de estruturas
+	// 'column', que torna mais fácil a identificação e comparação
+	// de cada valor
+	joinColumnData = composeTuple(tupleResult, fullJoinSchema);
 
-      dump_columns(joinColumnData);
+	dump_columns(joinColumnData);
 
-      // Transformamos em uma estrutura genérica de comparação de
-      // dados, como cada JOIN possui uma comparação, iteramos por
-      // todos os joins.
-      for (j = 0; j < select.njoins; j++) {
-	temp_listvalue = columnListValues(joinColumnData, select.joins[j].condition);
+	// Transformamos em uma estrutura genérica de comparação de
+	// dados, como cada JOIN possui uma comparação, iteramos por
+	// todos os joins.
+	for (j = 0; j < select.njoins; j++) {
+	  temp_listvalue = columnListValues(joinColumnData, select.joins[j].condition);
 
-	// Se a comparação retornou falso, a tupla já não é válida
-	if (doWhere(temp_listvalue) == 0) {
-	  printf("tuple is invalid!\n\n");
-	  tupleIsValid = 0;
-	  break;
+	  // Se a comparação retornou falso, a tupla já não é válida
+	  if (doWhere(temp_listvalue) == 0) {
+	    tupleIsValid = 0;
+	    break;
+	  }
 	}
-      }
 
-      if (!tupleIsValid) {
-	free(tupleData);
-	free(fullJoinSchema);
-	free(tupleResult);
-	free(joinColumnData);
-	free(temp_listvalue);
+	if (!tupleIsValid) {
+	  free(tupleData);
+	  free(fullJoinSchema);
+	  free(tupleResult);
+	  free(joinColumnData);
+	  free(temp_listvalue);
+	}	
       }
     }
   }

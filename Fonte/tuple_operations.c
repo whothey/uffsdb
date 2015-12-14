@@ -91,20 +91,23 @@ column *composeTuple(char *tuple, tp_table *schema)
   for (p = schema, c = columns; p != NULL; p = p->next) {
     c->tipoCampo  = p->tipo;
     strcpy(c->nomeCampo, p->nome);
-    c->valorCampo = malloc(sizeof(char) * (p->tam + 1));
+    c->valorCampo = malloc(sizeof(char) * p->tam);
 
-    memset(c->valorCampo, '\0', p->tam + 1);
+    memset(c->valorCampo, '\0', p->tam);
 
     fieldIterator = 0;
     while (fieldIterator < p->tam) {
-     // printf("fieldIterator: %d\n", fieldIterator);
-      //printf("tupleIterator: %d\n", tupleIterator);
-      //printf("p->tam: %d\n", p->tam);
+      printf("fieldIterator: %d\n", fieldIterator);
+      printf("tupleIterator: %d\n", tupleIterator);
+      printf("p->tam: %d\n", p->tam);
+
+      printf("tupledata: %c\n", tuple[tupleIterator]);
       
       c->valorCampo[fieldIterator] = tuple[tupleIterator];
       tupleIterator++;
       fieldIterator++;
     }
+    
     if (p->next != NULL) {
       columns->next = malloc(sizeof(column));
       c = columns->next; 
@@ -139,11 +142,10 @@ list_value *columnListValues(column* data, qr_filter *condition)
       value->typeValue = 'I';
     }
   } else { // Será considerado como coluna
-    for (c = data; c != NULL; c = c->next,i++) {
+    for (c = data,i=0; c != NULL; c = c->next,i++) {
       if (c->tipoCampo == 'C' || c->tipoCampo == 'S') {
 	value->sname[i] = (char *)malloc(sizeof(char) * strlen(c->valorCampo)+1);
 	strcpy(value->sname[i], c->valorCampo);
-	printf("ValueC: %s\n\n",value->sname[i]);
 	value->typeValue = 'C';
       } else if(c->tipoCampo == 'D') {
 	auxd = (double *)&c->valorCampo[0];
@@ -151,7 +153,6 @@ list_value *columnListValues(column* data, qr_filter *condition)
 	value->typeValue = 'D';
       } else if (c->tipoCampo == 'I') {
 	auxi = (int *)&c->valorCampo[0];
-	printf("Value: %d\n\n",*auxi);
 	value->ivalue[i] = *auxi;
 	value->typeValue = 'I';
       }

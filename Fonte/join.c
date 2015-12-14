@@ -43,8 +43,7 @@ char *joinNext(char *tuple, tp_join *join_data, tp_table *completeSchema)
      , *subject	 = NULL	 // A atual tupla de uma das tabelas do JOIN
      , *test	 = NULL; // Ponteiro auxiliar para teste de realloc
   
-  int searchIndex  = 0  // Variavel auxiliar para calculo da posição da tupla no disco
-    , newTupleSize = 0  // Tamanho atual da tupla-resultado
+  int newTupleSize = 0  // Tamanho atual da tupla-resultado
     , subjectSize  = 0  // Tamanho da atual tupla de uma das tabelas do JOIN
     , tupleIndex   = 0 // Último índice atualizado de newTuple [data]
     , i;
@@ -60,12 +59,9 @@ char *joinNext(char *tuple, tp_join *join_data, tp_table *completeSchema)
     // tupla do objeto que estamos concatenando
     newTupleSize += subjectSize;
     
-    // Precisamos encontrar o offset de bytes no disco, já que
-    // getTupla tem o valor "from" como offset do fseek()
-    searchIndex = subjectSize * p->current_index;
-
-    // Pegamos a tupla para comparar se esta é válida
-    subject = getTupla(p->schema, p->object, searchIndex);
+    // Pegamos a próxima tupla do índice do JOIN para comparar se esta
+    // é válida
+    subject = getTupla(p->schema, p->object, p->current_index++);
 
     // O ERRO_DE_LEITURA, neste caso, é quando a tabela chegou á seu
     // fim, nesse caso, precisamos resetar o index deste join, e
@@ -76,8 +72,8 @@ char *joinNext(char *tuple, tp_join *join_data, tp_table *completeSchema)
       if (p->prev != NULL)
 	p->prev->current_index++;
       else
-        break;
-
+	return NULL; // Terminou a iteração
+	
       // Como a tupla lida é inválida, precisamos reiniciar o processo
       // do JOIN com os indexes válidos
       p = join_data; // Reinicia o ponteiro *p desde o primeir JOIN
