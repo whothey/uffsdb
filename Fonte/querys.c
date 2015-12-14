@@ -423,7 +423,7 @@ void startQuery(qr_select select)
 	}	
       }
     }
-  } else {
+  } else if(select.nfilters > 0) {
     for (i = 0; tupleData != ERRO_DE_LEITURA; i++) {
       tupleData = getTupla(outerTableSchema, outerTableObject, i);
       if (tupleData == NULL) break;
