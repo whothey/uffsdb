@@ -346,6 +346,7 @@ void startQuery(qr_select select)
   char              *tupleData, *tupleResult;
   column            *joinColumnData, *singleColumnData;
   list_value        *temp_listvalue;
+  tp_buffer         *buffer = initbuffer();
 
   // Verificamos se todas as tabelas existem
   // TODO: Verificar tabelas do JOIN
@@ -422,7 +423,7 @@ void startQuery(qr_select select)
       temp_listvalue = readyWhere(&select, singleColumnData);
 
       if (doWhere(temp_listvalue) == 1) {
-	printf("UMA VALIDA\n");
+        storeInBuffer(tupleData, tamTupla(outerTableSchema, outerTableObject), buffer);
       }
     }
   }

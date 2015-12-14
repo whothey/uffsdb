@@ -43,4 +43,10 @@ column *composeTuple(char *tuple, tp_table *schema);
  */
 list_value *columnListValues(column* data, qr_filter *condition);
 
+/**
+ * Guarda uma tupla no Buffer informado.
+ * Basicamente cópia da colocaTuplaBuffer(), porém retorna a posição
+ */
+bf_position *storeInBuffer(char *tuple, size_t tuple_size, tp_buffer *buffer);
+
 #endif /* _UFFSDB_TUPLEOP_ */

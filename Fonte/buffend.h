@@ -77,6 +77,12 @@ typedef struct tp_buffer{ // Estrutura utilizada para armazenar o buffer.
    unsigned int position;   // Próxima posição válida na página.
 }tp_buffer;
 
+// Estrutura que indica uma posição no buffer
+typedef struct bf_position {
+  int page;
+  int position;
+}bf_position;
+
 typedef struct rc_insert {
     char    *objName;           // Nome do objeto (tabela, banco de dados, etc...)
     char   **columnName;        // Colunas da tabela

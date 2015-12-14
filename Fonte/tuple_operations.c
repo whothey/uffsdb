@@ -217,3 +217,30 @@ list_value *columnListValues(column* data, qr_filter *condition)
 
   return value;
 }
+
+bf_position *storeInBuffer(char *tuple, size_t tuple_size, tp_buffer *buffer)
+{
+  int i = 0, found = 0;
+  bf_position *pos;
+  
+  while (!found && i < PAGES) {//Procura pagina com espaço para a tupla.
+    if(SIZE - buffer[i].position > tuple_size) {// Se na pagina i do buffer tiver espaço para a tupla, coloca tupla.
+      pos = malloc(sizeof(bf_position));
+      
+      setTupla(buffer, tuple, tuple_size, i);
+      found = 1;
+      buffer[i].nrec += 1;
+
+      pos->page     = i;
+      pos->position = buffer[i].position; // Guarda posição da tupla para retorno
+      
+      buffer[i].position += tuple_size; // Atualiza proxima posição vaga dentro da pagina.
+      
+      return pos;
+    }
+    
+    i++;// Se não, passa pra proxima página do buffer.
+  }
+
+  return NULL;
+}
