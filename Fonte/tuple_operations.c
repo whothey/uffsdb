@@ -117,7 +117,7 @@ column *composeTuple(char *tuple, tp_table *schema)
 list_value *columnListValues(column* data, qr_filter *condition)
 {
   list_value *value;
-  column *c;
+  column *c = data;
   int *auxi=(int *)malloc(sizeof(int)),i=0;
   double *auxd=(double *)malloc(sizeof(double));
 
@@ -125,42 +125,82 @@ list_value *columnListValues(column* data, qr_filter *condition)
 
   if (value == NULL) return NULL;
 
-  if (condition->left_type == 'V') {
-	i++;
-    if(condition->typeAtt == 'C') {
-      value->sname[0] = (char *)malloc(sizeof(char) * (strlen(condition->left) + 1));
-      strcpy(value->sname[0], condition->left);
-      value->typeValue = 'C';      
-    } else if (condition->typeAtt == 'D') {
-      value->dvalue[0] = atof(condition->left);
-      value->typeValue = 'D';
-    } else if (condition->typeAtt == 'I') {
-      value->ivalue[0] = atoi(condition->left);
-      value->typeValue = 'I';
-    }
-  } else { // Será considerado como coluna
-    for (c = data; c != NULL; c = c->next,i++) {
-      if (c->tipoCampo == 'C' || c->tipoCampo == 'S') {
-	value->sname[i] = (char *)malloc(sizeof(char) * strlen(c->valorCampo)+1);
-	strcpy(value->sname[i], c->valorCampo);
-	printf("ValueC: %s\n\n",value->sname[i]);
-	value->typeValue = 'C';
-      } else if(c->tipoCampo == 'D') {
-	auxd = (double *)&c->valorCampo[0];
-	value->dvalue[i] = *auxd;
-	value->typeValue = 'D';
-      } else if (c->tipoCampo == 'I') {
-	auxi = (int *)&c->valorCampo[0];
-	printf("Value: %d\n\n",*auxi);
-	value->ivalue[i] = *auxi;
-	value->typeValue = 'I';
-      }
-    }
-  }
 
-	value->typeOp = '=';
+  while(i < 2){
+		if(i == 0){
+			if (condition->left_type == 'V') {	
+				if(condition->typeAtt == 'C') {
+					value->sname[0] = (char *)malloc(sizeof(char) * (strlen(condition->left) + 1));
+					strcpy(value->sname[0], condition->left);
+					value->typeValue = 'C';      
+				}else if (condition->typeAtt == 'D') {
+					value->dvalue[0] = atof(condition->left);
+					value->typeValue = 'D';
+				}else if (condition->typeAtt == 'I') {
+					value->ivalue[0] = atoi(condition->left);
+					value->typeValue = 'I';
+				}
+				i++;
+			}
+			else{
+				if (c->tipoCampo == 'C' || c->tipoCampo == 'S') {
+					value->sname[0] = (char *)malloc(sizeof(char) * strlen(c->valorCampo)+1);
+					strcpy(value->sname[0], c->valorCampo);
+					value->typeValue = 'C';
+
+				}else if (c->tipoCampo == 'I') {
+					auxi = (int *)&c->valorCampo[0];					
+					value->ivalue[0] = *auxi;
+					//printf("Value0: %d\n",value->ivalue[0]);
+					value->typeValue = 'I';
+				
+				}else if(c->tipoCampo == 'D') {
+					auxd = (double *)&c->valorCampo[0];
+					value->dvalue[0] = *auxd;
+					value->typeValue = 'D';
+				
+				}	  
+				i++;
+			}
+
+			}
+			else if (i == 1){
+			if (condition->right_type == 'V') {	
+				if(condition->typeAtt == 'C') {
+					value->sname[1] = (char *)malloc(sizeof(char) * (strlen(condition->right) + 1));
+					strcpy(value->sname[1], condition->right);
+
+				}else if (condition->typeAtt == 'I') {
+					value->ivalue[1] = atoi(condition->right);
+
+				}else if (condition->typeAtt == 'D') {
+					value->dvalue[1] = atof(condition->right);
+				}
+
+				i++;
+			}
+			else{
+				if (c->tipoCampo == 'C' || c->tipoCampo == 'S') {
+					value->sname[1] = (char *)malloc(sizeof(char) * strlen(c->valorCampo)+1);
+					strcpy(value->sname[1], c->valorCampo);
+
+				}else if (c->tipoCampo == 'I') {
+					auxi = (int *)&c->valorCampo[0];
+					value->ivalue[1] = *auxi;
+					//printf("Value1: %d\n",value->ivalue[1]);
+				
+				}else if(c->tipoCampo == 'D') {
+					auxd = (double *)&c->valorCampo[0];
+					value->dvalue[1] = *auxd;
+				
+				}	  
+				i++;
+			}
+		}
+  }
+	value->typeOp = condition->typeOp;
 	value->typeLogic = 'N';
-	value->typeValue = 'I';
+
 
   return value;
 }
