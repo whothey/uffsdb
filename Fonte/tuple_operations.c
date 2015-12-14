@@ -148,7 +148,7 @@ list_value *columnListValues(column* data, qr_filter *condition)
 					}else if (c->tipoCampo == 'I') {
 						auxi = (int *)&c->valorCampo[0];					
 						value->ivalue[0] = *auxi;
-						printf("Value0: %d\n",value->ivalue[0]);
+						//printf("Value0: %d\n",value->ivalue[0]);
 						value->typeValue = 'I';
 			
 					}else if(c->tipoCampo == 'D') {
@@ -197,7 +197,7 @@ list_value *columnListValues(column* data, qr_filter *condition)
 							}else if (c->tipoCampo == 'I') {
 								auxi = (int *)&c->valorCampo[0];
 								value->ivalue[1] = *auxi;
-								printf("Value1: %d\n",value->ivalue[1]);
+								//printf("Value1: %d\n",value->ivalue[1]);
 				
 							}else if(c->tipoCampo == 'D') {
 								auxd = (double *)&c->valorCampo[0];
