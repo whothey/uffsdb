@@ -429,3 +429,59 @@ void startQuery(qr_select select)
   }
 }
 
+void printBufferData(tp_buffer *bufferpoll, tp_table *schema)
+{
+  column *pagina;
+  int column_count = schema_column_count(*schema), p = 0, j, cont = 0, ntuples = 0;
+  
+  do {
+    pagina = getBufferPage(bufferpoll, schema, p);
+
+    if (pagina == NULL) return;
+    
+    if(pagina == ERRO_PARAMETRO){
+      printf("ERROR: could not open the table.\n");
+      return;
+    }
+
+    if(!cont) {
+      for(j=0; j < column_count; j++){
+	if(pagina[j].tipoCampo == 'S')
+	  printf(" %-20s ", pagina[j].nomeCampo);
+	else
+	  printf(" %-10s ", pagina[j].nomeCampo);
+	if(j<column_count-1)
+	  printf("|");
+      }
+      printf("\n");
+      for(j=0; j < column_count; j++){
+	printf("%s",(pagina[j].tipoCampo == 'S')? "----------------------": "------------");
+	if(j<column_count-1)
+	  printf("+");
+      }
+      printf("\n");
+    }
+    cont++;
+    for(j=0; j < column_count*bufferpoll[p].nrec; j++){
+      if(pagina[j].tipoCampo == 'S')
+	printf(" %-20s ", pagina[j].valorCampo);
+      else if(pagina[j].tipoCampo == 'I'){
+	int *n = (int *)&pagina[j].valorCampo[0];
+	printf(" %-10d ", *n);
+      } else if(pagina[j].tipoCampo == 'C'){
+	printf(" %-10c ", pagina[j].valorCampo[0]);
+      } else if(pagina[j].tipoCampo == 'D'){
+	double *n = (double *)&pagina[j].valorCampo[0];
+	printf(" %-10f ", *n);
+      }
+      if(j>=1 && ((j+1)%column_count)==0)
+	printf("\n");
+      else
+	printf("|");
+    }
+
+    p++;
+  } while(pagina != NULL);
+  
+  printf("\n(%d %s)\n\n",ntuples,(1>=ntuples)?"row": "rows");
+}
