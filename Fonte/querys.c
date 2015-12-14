@@ -430,17 +430,18 @@ void startQuery(qr_select select)
       singleColumnData = composeTuple(tupleData, outerTableSchema);
       temp_listvalue = readyWhere(&select, singleColumnData);
 
-      if (doWhere(temp_listvalue) == 1) {
+      if (doWhere(temp_listvalue) == 1)
         storeInBuffer(tupleData, tamTupla(outerTableSchema, outerTableObject), buffer);
-      }
     }
+
+    printBufferData(buffer, outerTableSchema);
   }
 }
 
 void printBufferData(tp_buffer *bufferpoll, tp_table *schema)
 {
   column *pagina;
-  int column_count = schema_column_count(*schema), p = 0, j, cont = 0, ntuples = 0;
+  int column_count = schema_column_count(schema), p = 0, j, cont = 0, ntuples = 0;
   
   do {
     pagina = getBufferPage(bufferpoll, schema, p);

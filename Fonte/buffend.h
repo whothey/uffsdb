@@ -651,5 +651,8 @@ Retorno:
 
 void startQuery(qr_select select);
 
+void printBufferData(tp_buffer *bufferpoll, tp_table *schema);
+column *getBufferPage(tp_buffer *buffer, tp_table *schema, int page);
+
 
 #endif /* _UFFSDB_BUFFEND_ */
