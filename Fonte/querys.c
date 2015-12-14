@@ -198,7 +198,7 @@ list_value *readyWhere(qr_select *st, column *colunas){
 	
 	int position=st->nfilters-1,i=0,*auxi=(int *)malloc(sizeof(int)),flag=0,full=0;
 	double *auxd = (double *)malloc(sizeof(double));
-	
+	column *c = colunas; // Iterador de colunas
 	list_value *value = (list_value *) malloc(sizeof(list_value));						   								//Lista de valores, usada para o WHERE
 	value->next = (list_value *) malloc(sizeof(list_value));
 	list_value *tmp = value;
@@ -207,7 +207,6 @@ list_value *readyWhere(qr_select *st, column *colunas){
 	while(position >= 0){
 		
 		if(full == 0){																									//Full=0. Preciso primeiro preencher o atributo da esquerda.
-
 			if(st->filters[position].left_type == 'V'){																	//Caso seja um valor
 				full++;																									//Achei o valor, devo ir para o atributo da direita agora
 				flag=1;																									//Flag faz a busca voltar ao primeiro att.
@@ -231,26 +230,26 @@ list_value *readyWhere(qr_select *st, column *colunas){
 				}
 
 			}
-			else if(strcmp(st->filters[position].left, colunas->nomeCampo) == 0){									//Se == 0. É o atributo que estou procurando.
+			else if(strcmp(st->filters[position].left, c->nomeCampo) == 0){									//Se == 0. É o atributo que estou procurando.
 				full++;																									//Achei o valor, devo ir para o atributo da direita agora
 				flag=1;
-				if(colunas->tipoCampo == 'C' || colunas->tipoCampo == 'S'){
+				if(c->tipoCampo == 'C' || c->tipoCampo == 'S'){
 
-					tmp->sname[0] = (char *)malloc(sizeof(char) * strlen(colunas->valorCampo)+1);						//Alcando o comprimento do valor +1
-					strcpy(tmp->sname[0], colunas->valorCampo);
+					tmp->sname[0] = (char *)malloc(sizeof(char) * strlen(c->valorCampo)+1);						//Alcando o comprimento do valor +1
+					strcpy(tmp->sname[0], c->valorCampo);
 					tmp->typeValue = 'C';
 
 				}
-				else if(colunas->tipoCampo == 'D'){
+				else if(c->tipoCampo == 'D'){
 
-					auxd = (double *)&colunas->valorCampo[0];
+					auxd = (double *)&c->valorCampo[0];
 					tmp->dvalue[0] = *auxd;
 					tmp->typeValue = 'D';
 			
 				}
-				else if(colunas->tipoCampo == 'I'){															//Caso INT
+				else if(c->tipoCampo == 'I'){															//Caso INT
 					
-					auxi = (int *)&colunas->valorCampo[0];															//Salvando o valor
+					auxi = (int *)&c->valorCampo[0];															//Salvando o valor
 					tmp->ivalue[0] = *auxi;
 					tmp->typeValue = 'I';
 				}
@@ -281,26 +280,26 @@ list_value *readyWhere(qr_select *st, column *colunas){
 					tmp->typeValue = 'I';
 				}
 			}
-			else if(strcmp(st->filters[position].right, colunas->nomeCampo) == 0){									//Se == 0. É o atributo que estou procurando.
+			else if(strcmp(st->filters[position].right, c->nomeCampo) == 0){									//Se == 0. É o atributo que estou procurando.
 				full++;
 				flag=1;																									//Encontrei os atributos, hora de setar outra lista, e voltar a buscar do 0
-				if(colunas->tipoCampo == 'C' || colunas->tipoCampo == 'S'){
+				if(c->tipoCampo == 'C' || c->tipoCampo == 'S'){
 
-					tmp->sname[1] = (char *)malloc(sizeof(char) * strlen(colunas->valorCampo)+1);						//Alcando o comprimento do valor +1
-					strcpy(tmp->sname[1], colunas->valorCampo);
+					tmp->sname[1] = (char *)malloc(sizeof(char) * strlen(c->valorCampo)+1);						//Alcando o comprimento do valor +1
+					strcpy(tmp->sname[1], c->valorCampo);
 					tmp->typeValue = 'C';
 
 				}
-				else if(colunas->tipoCampo == 'D'){															
+				else if(c->tipoCampo == 'D'){															
 
-					auxd = (double *)&colunas->valorCampo[0];															//Salvando o valor em caso de Double
+					auxd = (double *)&c->valorCampo[0];															//Salvando o valor em caso de Double
 					tmp->dvalue[1] = *auxd;
 					tmp->typeValue = 'D';
 			
 				}
-				else if(colunas->tipoCampo == 'I'){
+				else if(c->tipoCampo == 'I'){
 					
-					auxi = (int *)&colunas->valorCampo[0];															//Salvando o valor em caso de Int
+					auxi = (int *)&c->valorCampo[0];															//Salvando o valor em caso de Int
 					tmp->ivalue[1] = *auxi;
 					tmp->typeValue = 'I';
 
@@ -320,10 +319,12 @@ list_value *readyWhere(qr_select *st, column *colunas){
 					tmp->typeLogic = st->filters[position-1].typeLogico;
 					tmp = tmp->next;
 					tmp->next = (list_value *)malloc(sizeof(list_value));
-					colunas = colunas->next;
+				        c = c->next;
 
 				}
-				full=0;																									//Do começo de novo
+				full=0;
+				c = colunas;
+				//Do começo de novo
 				position--;
 			}
 			flag=0;
@@ -343,7 +344,7 @@ void startQuery(qr_select select)
   tp_table          *outerTableSchema, *fullJoinSchema;
   int                i, j, tupleIsValid;
   char              *tupleData, *tupleResult;
-  column            *joinColumnData;
+  column            *joinColumnData, *singleColumnData;
   list_value        *temp_listvalue;
 
   // Verificamos se todas as tabelas existem
@@ -409,6 +410,18 @@ void startQuery(qr_select select)
 	  free(joinColumnData);
 	  free(temp_listvalue);
 	}	
+      }
+    }
+  } else {
+    for (i = 0; tupleData != ERRO_DE_LEITURA; i++) {
+      tupleData = getTupla(outerTableSchema, outerTableObject, i);
+      if (tupleData == NULL) break;
+      
+      singleColumnData = composeTuple(tupleData, outerTableSchema);
+      temp_listvalue = readyWhere(&select, singleColumnData);
+
+      if (doWhere(temp_listvalue) == 1) {
+	printf("UMA VALIDA\n");
       }
     }
   }
